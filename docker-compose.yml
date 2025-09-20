@@ -1,0 +1,12 @@
+services:
+  backend:
+    build: ./packages/backend
+    env_file: .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - valkey
+  valkey:
+    image: valkey/valkey:7
+    ports:
+      - "6379:6379"

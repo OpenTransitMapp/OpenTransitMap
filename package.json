@@ -1,0 +1,24 @@
+{
+  "name": "open-transit-map",
+  "private": true,
+  "packageManager": "yarn@4.3.1",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "husky || true",
+    "lint": "eslint \"packages/**/*.{ts,tsx,js}\"",
+    "typecheck": "tsc -b",
+    "build": "yarn workspaces foreach -p -v run build",
+    "dev": "yarn workspaces foreach -p run dev",
+    "test": "yarn workspaces foreach -p run test || true"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "eslint": "^9.11.1",
+    "husky": "^9.1.6",
+    "typescript": "^5.6.3"
+  }
+}
