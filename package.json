@@ -10,7 +10,7 @@
     "lint": "eslint \"packages/**/*.{ts,tsx,js}\"",
     "typecheck": "tsc -b",
     "build": "yarn workspaces foreach -p -v run build",
-    "dev": "yarn workspaces foreach -p run dev",
+    "start": "yarn workspaces foreach -p run start",
     "test": "yarn workspaces foreach -p run test || true",
     "prepare": "husky"
   },

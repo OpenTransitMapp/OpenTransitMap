@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b",
-    "dev": "nodemon --watch src --exec node --loader ts-node/esm src/main.ts",
+    "start": "nodemon --watch src --exec node --loader ts-node/esm src/main.ts",
     "test": "echo backend tests TBD"
   },
   "dependencies": {

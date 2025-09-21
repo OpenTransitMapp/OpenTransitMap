@@ -9,10 +9,9 @@ jobs:
         with:
           node-version: 20
           cache: 'yarn'
-      - run: corepack enable && corepack prepare yarn@4.3.1 --activate
-      - run: yarn install --immutable
-      - name: Enforce dependency constraints
-        run: yarn constraints
-      - run: yarn lint
-      - run: yarn typecheck
-      - run: yarn build
+      - name: Enable Corepack (Yarn via packageManager)
+        run: corepack enable
+      - name: Install deps
+        run: make install
+      - name: CI pipeline (constraints + lint + typecheck + build)
+        run: make ci

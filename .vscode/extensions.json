@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-docker",
+    "redhat.vscode-yaml",
+    "EditorConfig.EditorConfig",
+    "ms-vscode.makefile-tools",
+    "GitHub.vscode-github-actions",
+    "DavidAnson.vscode-markdownlint"
+  ]
+}
+

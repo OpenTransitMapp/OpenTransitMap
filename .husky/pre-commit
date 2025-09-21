@@ -1,2 +1,3 @@
-yarn typecheck
-yarn lint
+corepack yarn constraints
+corepack yarn typecheck
+corepack yarn lint
