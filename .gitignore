@@ -15,3 +15,7 @@ build/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# TypeScript incremental build info
+*.tsbuildinfo
+**/*.tsbuildinfo

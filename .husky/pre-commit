@@ -1,2 +1,2 @@
-#!/bin/sh
-yarn lint && yarn typecheck
+yarn typecheck
+yarn lint
