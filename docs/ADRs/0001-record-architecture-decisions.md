@@ -1,4 +1,4 @@
-# ADR 0001: Record architecture decisions
+# Architecture Decision Record (ADR) 0001: Record Architecture Decisions
 
 ## Context
 We want a lightweight way to capture decisions.
