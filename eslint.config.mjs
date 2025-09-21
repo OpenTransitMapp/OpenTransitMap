@@ -42,7 +42,7 @@ export default [
     },
   },
   {
-    files: ['packages/frontend/**/*.{js,ts,tsx}'],
+    files: ['services/frontend/**/*.{js,ts,tsx}'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -51,4 +51,3 @@ export default [
     },
   },
 ];
-

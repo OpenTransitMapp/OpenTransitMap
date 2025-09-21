@@ -3,23 +3,24 @@
   "private": true,
   "packageManager": "yarn@4.3.1",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "services/*"
   ],
   "scripts": {
     "postinstall": "husky || true",
     "lint": "eslint \"packages/**/*.{ts,tsx,js}\"",
     "typecheck": "tsc -b",
-    "build": "yarn workspaces foreach -p -v run build",
-    "start": "yarn workspaces foreach -p run start",
-    "test": "yarn workspaces foreach -p run test || true",
+    "build": "yarn workspaces foreach -A --topological -v run build",
+    "start": "yarn workspaces foreach -A -p run start",
+    "test": "yarn workspaces foreach -A -p run test || true",
     "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "22.7.4",
     "@typescript-eslint/eslint-plugin": "8.8.1",
     "@typescript-eslint/parser": "8.8.1",
-    "globals": "15.9.0",
     "eslint": "9.11.1",
+    "globals": "15.9.0",
     "husky": "9.1.6",
     "typescript": "5.6.3"
   }

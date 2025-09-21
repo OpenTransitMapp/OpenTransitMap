@@ -2,8 +2,8 @@
   "extends": "./tsconfig.base.json",
   "files": [],
   "references": [
-    { "path": "packages/shared" },
-    { "path": "packages/backend" },
-    { "path": "packages/frontend" }
+    { "path": "packages/types" },
+    { "path": "services/backend" },
+    { "path": "services/frontend" }
   ]
 }

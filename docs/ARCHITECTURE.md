@@ -172,7 +172,7 @@ flowchart LR
 This topology shows normalized events flowing into processors that update the authoritative cache and emit compact deltas for streaming.
 
 ### Shared Schema Contracts
-- All contracts live in `packages/shared/src/schemas/` as Zod definitions exported alongside derived TypeScript types via `z.infer`.
+- All contracts live in `packages/types/src/schemas/` as Zod definitions exported alongside derived TypeScript types via `z.infer`.
 - `TransitEventSchema`: normalized raw feed event (provider metadata, timestamps, vehicle/station identifiers, payload hash).
 - `TrainsFrameSchema`: authoritative global snapshot; `ScopedTrainsFrameSchema` wraps it with `scopeId`, viewport metadata, and checksum.
 - `VehicleStateSchema`: per-vehicle status embedded inside frames; `VehicleDeltaSchema` captures change events and carries geometry + `scopeId`.
@@ -180,7 +180,7 @@ This topology shows normalized events flowing into processors that update the au
 - `ScopeDefinitionSchema`: what we persist in Valkey to describe each scope (normalized tiles, bbox, hash components, schema version).
 
 ## Delivery Layer
-- **Backend API** (`packages/backend`): A typed Express service that fronts the cache.
+- **Backend API** (`services/backend`): A typed Express service that fronts the cache.
   - `POST /api/trains/scopes`: Single entry point for viewport provisioning. Accepts JSON payloads that include `cityId` and either a `tiles` array or `bbox` object. The service normalizes inputs, mints a reusable `scopeId`, caches the definition, and returns the scoped snapshot plus metadata.
   - `GET /api/trains`: Serves the latest global `TrainsFrame` snapshot when called without query params. With `scope=<scopeId>` it returns the cached scoped snapshot without resending parameters.
   - `GET /api/trains/stream`: Sends the current scope's `TrainsFrame` as a bootstrap event, then tails `state.delta` to stream incremental updates. Clients stitch deltas onto the bootstrap state, so late joiners never rely on historical stream retention.
@@ -375,7 +375,7 @@ The diagram shows how inputs are compiled into MBTiles, bundled as a versioned c
 - **Future**: The same process boundaries translate to Kubernetes deployments with horizontal scaling per stage, sidecar Envoy proxies, and managed storage for tiles and telemetry stacks.
 
 ## Extensibility Considerations
-- Provider-specific logic is isolated in pollers and normalizers; the canonical schemas in `packages/shared` protect downstream consumers from upstream quirks.
+- Provider-specific logic is isolated in pollers and normalizers; the canonical schemas in `packages/types` protect downstream consumers from upstream quirks.
 - Schema evolution uses versioned Zod definitions with compatibility layers so older clients continue to function.
 - ADRs will capture key decisions: multi-stage pipeline, Valkey stream transport, schema strategy, edge security stack, and observability tooling.
 - Tile semantics follow standard Web Mercator (slippy tiles), so additional cities generate their own tile sets and reuse the same viewport/tile API; the `cityId` parameter keeps caches and schema adaptations isolated per agency.

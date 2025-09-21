@@ -1,0 +1,25 @@
+# VCS
+.git
+.gitignore
+
+# Node/Yarn artifacts
+node_modules
+packages/*/node_modules
+services/*/node_modules
+**/*.tsbuildinfo
+dist
+.DS_Store
+
+# Yarn modern artifacts that don’t need to go in the image
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Local env
+.env
+.env.*
+
+# IDE/editor
+.vscode
+.idea

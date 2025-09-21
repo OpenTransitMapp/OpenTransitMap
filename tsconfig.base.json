@@ -14,8 +14,14 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
+      "@open-transit-map/types": [
+        "packages/types/src/index.ts"
+      ],
+      "@open-transit-map/types/*": [
+        "packages/types/src/*"
+      ],
       "@shared/*": [
-        "packages/shared/src/*"
+        "packages/types/src/*"
       ]
     }
   }

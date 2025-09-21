@@ -371,9 +371,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-transit-map/backend@workspace:packages/backend":
+"@open-transit-map/backend@workspace:services/backend":
   version: 0.0.0-use.local
-  resolution: "@open-transit-map/backend@workspace:packages/backend"
+  resolution: "@open-transit-map/backend@workspace:services/backend"
   dependencies:
     "@types/express": "npm:4.17.21"
     express: "npm:4.19.2"
@@ -384,9 +384,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@open-transit-map/frontend@workspace:packages/frontend":
+"@open-transit-map/frontend@workspace:services/frontend":
   version: 0.0.0-use.local
-  resolution: "@open-transit-map/frontend@workspace:packages/frontend"
+  resolution: "@open-transit-map/frontend@workspace:services/frontend"
   dependencies:
     typescript: "npm:5.6.3"
     vite: "npm:5.4.8"
@@ -1832,6 +1832,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"globals@npm:15.9.0":
+  version: 15.9.0
+  resolution: "globals@npm:15.9.0"
+  checksum: 10c0/de4b553e412e7e830998578d51b605c492256fb2a9273eaeec6ec9ee519f1c5aa50de57e3979911607fd7593a4066420e01d8c3d551e7a6a236e96c521aee36c
+  languageName: node
+  linkType: hard
+
 "globals@npm:^14.0.0":
   version: 14.0.0
   resolution: "globals@npm:14.0.0"
@@ -2481,6 +2488,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:8.8.1"
     "@typescript-eslint/parser": "npm:8.8.1"
     eslint: "npm:9.11.1"
+    globals: "npm:15.9.0"
     husky: "npm:9.1.6"
     typescript: "npm:5.6.3"
   languageName: unknown

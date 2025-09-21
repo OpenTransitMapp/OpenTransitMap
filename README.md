@@ -45,10 +45,12 @@ Once running:
 
 ## Monorepo Layout
 ```
-packages/
+services/
   backend/   → Express API (health + metrics)
   frontend/  → Vite placeholder app
-  shared/    → shared types/constants
+
+packages/
+  types/     → shared types/constants
 
 docs/
   ARCHITECTURE.md
@@ -78,19 +80,19 @@ docs/
 - `make ci` → constraints + lint + typecheck + build (used in CI)
 
 What does `make start` do?
-- Calls `corepack yarn workspaces foreach -p run start` under the hood.
+- Calls `corepack yarn workspaces foreach -A -p run start` under the hood.
 - Backend: Nodemon + ts-node ESM loader on port 8080.
 - Frontend: Vite dev server on port 5173.
 - Shared: no-op (placeholder).
 
 Per‑package start/build scripts (examples):
-- Backend (`packages/backend`)
+- Backend (`services/backend`)
   - `yarn start` → Nodemon + ts-node on port 8080
   - `yarn build` → TypeScript build
-- Frontend (`packages/frontend`)
+- Frontend (`services/frontend`)
   - `yarn start` → Vite dev server (defaults to 5173)
   - `yarn build` → Production build
-- Shared (`packages/shared`)
+- Types (`packages/types`)
   - `yarn build` → TypeScript build
 
 ## Backend API (dev)

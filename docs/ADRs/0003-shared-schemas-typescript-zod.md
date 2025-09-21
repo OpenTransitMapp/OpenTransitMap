@@ -7,7 +7,7 @@ Date: 2025-09-21
 We want strict, runtime‑validated contracts across backend, broadcaster, and frontend while staying TypeScript‑first. Schemas must be sharable, versioned, and enforceable in CI.
 
 ## Decision
-Define all cross‑service contracts in `packages/shared/src/schemas/` using Zod and export types via `z.infer`.
+Define all cross‑service contracts in `packages/types/src/schemas/` using Zod and export types via `z.infer`.
 - Schemas: `TransitEvent`, `VehicleState`, `VehicleDelta`, `TrainsFrame`, `ScopedTrainsFrame`, `ViewportRequest`, `ScopeDefinition`.
 - Include `schemaVersion` in envelopes; evolve schemas with additive changes; gate breaking changes behind new versions.
 

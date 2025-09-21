@@ -1,11 +1,10 @@
 {
-  "name": "@open-transit-map/shared",
+  "name": "@open-transit-map/types",
   "version": "0.1.0",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc -b",
-    "start": "echo nothing",
     "test": "echo no tests"
   }
 }
