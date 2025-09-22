@@ -6,7 +6,6 @@ build/
 .DS_Store
 
 # Yarn Berry (v4) artifacts to ignore by default
-# Keep install-state.gz; ignore other folders unless explicitly whitelisted
 .yarn/*
 !.yarn/constraints.pro
 !.yarn/patches
