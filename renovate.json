@@ -1,0 +1,253 @@
+{
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separateMultipleMajorReleases",
+    ":timezone(America/New_York)",
+    ":label(renovate)"
+  ],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "enabledManagers": [
+    "npm",
+    "dockerfile",
+    "docker-compose",
+    "github-actions"
+  ],
+  "stabilityDays": 5,
+  "ignoreUnstable": true,
+  "rangeStrategy": "bump",
+  "rebaseWhen": "conflicted",
+  "dependencyDashboard": true,
+  "platformAutomerge": false,
+  "npm": {
+    "postUpdateOptions": [
+      "yarnDedupeHighest"
+    ]
+  },
+  "postUpgradeTasks": {
+    "commands": [
+      "corepack yarn install --mode=update-lockfile",
+      "corepack yarn dedupe --strategy highest",
+      "corepack yarn prettier --write '**/*.{json,md,yml,yaml}'",
+      "corepack yarn lint --fix"
+    ],
+    "fileFilters": [
+      "**/package.json",
+      "yarn.lock"
+    ],
+    "executionMode": "update"
+  },
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security"
+    ],
+    "schedule": [
+      "at any time"
+    ],
+    "automerge": false
+  },
+  "lockFileMaintenance": {
+    "enabled": false,
+    "extends": [
+      ":semanticCommitTypeAll(chore)"
+    ],
+    "commitMessageAction": "lockfile",
+    "schedule": [
+      "every saturday at 04:00"
+    ],
+    "automerge": false
+  },
+  "branchPrefix": "renovate/",
+  "commitMessagePrefix": "",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "schedule": [
+    "every weekday after 01:00 and before 06:00"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": [
+        "npm"
+      ],
+      "semanticCommitScope": "{{packageFileDir}}"
+    },
+    {
+      "groupName": "Node Docker base",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
+      "allowedVersions": "20.* || 22.*",
+      "pinDigests": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "schedule": [
+        "every wednesday"
+      ],
+      "automerge": false
+    },
+    {
+      "groupName": "Docker base images",
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "schedule": [
+        "every wednesday"
+      ],
+      "pinDigests": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "automerge": false
+    },
+    {
+      "groupName": "Docker Compose images",
+      "matchManagers": [
+        "docker-compose"
+      ],
+      "schedule": [
+        "every wednesday"
+      ],
+      "pinDigests": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "automerge": false
+    },
+    {
+      "groupName": "TypeScript toolchain",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackagePatterns": [
+        "^typescript$",
+        "^ts-node$",
+        "^ts-jest$",
+        "^tsx$",
+        "^@types/",
+        "^eslint(-|$)",
+        "^@typescript-eslint/",
+        "^prettier$"
+      ],
+      "schedule": [
+        "every saturday at 04:00"
+      ],
+      "automerge": false,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "groupName": "Map stack",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackagePatterns": [
+        "^maplibre-gl$",
+        "^@maplibre/",
+        "^@types/mapbox__vector-tile$",
+        "^pbf$",
+        "^vt-pbf$",
+        "^geojson-.*",
+        "^@turf/"
+      ],
+      "schedule": [
+        "every saturday at 04:00"
+      ],
+      "automerge": false,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "groupName": "Backend core libs",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackagePatterns": [
+        "^zod$",
+        "^fastify$|^express$",
+        "^undici$|^node-fetch$",
+        "^ws$",
+        "^dotenv(-expand)?$",
+        "^pino(-|$)"
+      ],
+      "schedule": [
+        "every monday"
+      ],
+      "automerge": false
+    },
+    {
+      "groupName": "Testing",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackagePatterns": [
+        "^jest$|^vitest$|^uvu$",
+        "^supertest$",
+        "^@testing-library/"
+      ],
+      "schedule": [
+        "every saturday at 04:00"
+      ],
+      "automerge": false,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "groupName": "DevDependencies (weekly batch)",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "schedule": [
+        "every saturday at 04:00"
+      ],
+      "automerge": false,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "schedule": [
+        "every tuesday"
+      ],
+      "automerge": false
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "labels": [
+        "major"
+      ],
+      "automerge": false,
+      "prCreation": "not-pending"
+    }
+  ]
+}

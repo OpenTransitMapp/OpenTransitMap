@@ -11,6 +11,7 @@ Minimal monorepo scaffold: typed backend, Vite frontend, and shared types.
 - Architecture docs, Privacy stub, and ADRs
 - CI via GitHub Actions (lint, typecheck, build, constraints)
 - Pre‑commit hooks (Husky)
+ - Dependency updates via Renovate (see docs/RENOVATE.md)
 
 ## Prerequisites
 - Git — https://git-scm.com/downloads
