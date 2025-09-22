@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
-      - name: Enable Corepack
-        run: corepack enable
       - name: Install dependencies
         run: make install
       - name: Constraints
@@ -34,12 +34,12 @@ jobs:
     needs: [verify]
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
-      - name: Enable Corepack
-        run: corepack enable
       - name: Install dependencies
         run: make install
       - name: Build all workspaces
@@ -51,12 +51,12 @@ jobs:
     needs: [verify]
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
-      - name: Enable Corepack
-        run: corepack enable
       - name: Install dependencies
         run: make install
       - name: Run tests
