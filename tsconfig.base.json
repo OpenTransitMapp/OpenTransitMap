@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
+    "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
@@ -14,15 +11,9 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@open-transit-map/types": [
-        "packages/types/src/index.ts"
-      ],
-      "@open-transit-map/types/*": [
-        "packages/types/src/*"
-      ],
-      "@shared/*": [
-        "packages/types/src/*"
-      ]
+      "@open-transit-map/types": ["packages/types/src/index.ts"],
+      "@open-transit-map/types/*": ["packages/types/src/*"],
+      "@shared/*": ["packages/types/src/*"]
     }
   }
 }
