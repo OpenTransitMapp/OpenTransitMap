@@ -1,17 +1,63 @@
 name: CI
 on: [push, pull_request]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
-      - name: Enable Corepack (Yarn via packageManager)
+          cache: yarn
+      - name: Enable Corepack
         run: corepack enable
-      - name: Install deps
+      - name: Install dependencies
         run: make install
-      - name: CI pipeline (constraints + lint + typecheck + build)
-        run: make ci
+      - name: Constraints
+        run: make constraints
+      - name: Lint
+        run: make lint
+      - name: Typecheck
+        run: make typecheck
+      - name: Format Check
+        run: make format-check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [verify]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: make install
+      - name: Build all workspaces
+        run: make build
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: make install
+      - name: Run tests
+        run: make test

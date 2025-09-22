@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: help install start lint typecheck build test constraints ci up down
+.PHONY: help install start lint typecheck build test constraints ci format format-check up down
 
 # Always use Corepack to run Yarn (no global Yarn, no vendored yarnPath)
 YARN := corepack yarn
@@ -14,6 +14,8 @@ help:
 	@echo "  test         run workspace tests"
 	@echo "  constraints  enforce pinned dependency versions"
 	@echo "  ci           constraints + lint + typecheck + build"
+	@echo "  format       run Prettier on JSON/MD/YAML"
+	@echo "  format-check check formatting (no changes)"
 	@echo "  up           docker compose up --build"
 	@echo "  down         docker compose down -v"
 
@@ -40,6 +42,12 @@ constraints:
 
 ci:
 	$(YARN) constraints && $(YARN) lint && $(YARN) typecheck && $(YARN) build
+
+format:
+	$(YARN) format
+
+format-check:
+	$(YARN) format:check
 
 up:
 	docker compose up --build
