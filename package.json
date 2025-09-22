@@ -10,9 +10,9 @@
     "postinstall": "husky || true",
     "lint": "eslint \"packages/**/*.{ts,tsx,js}\"",
     "typecheck": "tsc -b",
-    "build": "yarn workspaces foreach -A --topological -v run build",
-    "start": "yarn workspaces foreach -A -p run start",
-    "test": "yarn workspaces foreach -A -p run test || true",
+    "build": "yarn workspaces foreach --all --topological --verbose --interlaced run build",
+    "start": "yarn workspaces foreach --all --parallel --interlaced run start",
+    "test": "yarn workspaces foreach --all --parallel --interlaced run test || true",
     "prepare": "husky"
   },
   "devDependencies": {

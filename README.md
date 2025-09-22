@@ -80,7 +80,7 @@ docs/
 - `make ci` → constraints + lint + typecheck + build (used in CI)
 
 What does `make start` do?
-- Calls `corepack yarn workspaces foreach -A -p run start` under the hood.
+- Calls `corepack yarn workspaces foreach --all --parallel --interlaced run start` under the hood.
 - Backend: Nodemon + ts-node ESM loader on port 8080.
 - Frontend: Vite dev server on port 5173.
 - Shared: no-op (placeholder).

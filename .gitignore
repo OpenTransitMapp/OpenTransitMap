@@ -7,6 +7,7 @@ build/
 
 # Yarn Berry (v4) artifacts to ignore by default
 .yarn/*
+.yarn/install-state.gz
 !.yarn/constraints.pro
 !.yarn/patches
 !.yarn/plugins
@@ -17,3 +18,4 @@ build/
 # TypeScript incremental build info
 *.tsbuildinfo
 **/*.tsbuildinfo
+
