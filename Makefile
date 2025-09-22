@@ -40,9 +40,6 @@ test:
 constraints:
 	$(YARN) constraints
 
-ci:
-	$(YARN) constraints && $(YARN) lint && $(YARN) typecheck && $(YARN) build
-
 format:
 	$(YARN) format
 
