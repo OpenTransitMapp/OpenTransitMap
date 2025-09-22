@@ -6,5 +6,8 @@
   "scripts": {
     "build": "tsc -b",
     "test": "echo no tests"
+  },
+  "dependencies": {
+    "zod": "3.23.8"
   }
 }
