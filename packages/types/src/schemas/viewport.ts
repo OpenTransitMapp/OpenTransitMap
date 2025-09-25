@@ -20,6 +20,7 @@ export const BBoxSchema = z
   })
   .refine((b) => b.north >= b.south, { message: 'north must be >= south', path: ['north'] })
   .refine((b) => b.east >= b.west, { message: 'east must be >= west', path: ['east'] })
+  .strict()
   .describe('Geographic bounding box (WGS84)');
 export type BBox = z.infer<typeof BBoxSchema>;
 
@@ -35,6 +36,7 @@ export const ViewportRequestSchema = z
       .optional()
       .describe('Optional client-provided idempotency key for scope provisioning'),
   })
+  .strict()
   .describe('Request payload to mint a viewport scope (bbox-only)');
 export type ViewportRequest = z.infer<typeof ViewportRequestSchema>;
 

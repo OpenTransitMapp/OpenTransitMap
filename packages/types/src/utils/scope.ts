@@ -47,3 +47,18 @@ export function computeScopeKey(
   ];
   return parts.join('|');
 }
+
+/**
+ * Clamp a bbox to the valid Web Mercator domain (EPSG:3857):
+ * latitude to ±85.05113°, longitude to ±180°.
+ * Does not reorder; call after ordering and before quantization.
+ */
+export function clampToWebMercator(bbox: BBox): BBox {
+  const MAX_LAT = 85.05113;
+  const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
+  const south = clamp(bbox.south, -MAX_LAT, MAX_LAT);
+  const north = clamp(bbox.north, -MAX_LAT, MAX_LAT);
+  const west = clamp(bbox.west, -180, 180);
+  const east = clamp(bbox.east, -180, 180);
+  return { south, west, north, east };
+}
