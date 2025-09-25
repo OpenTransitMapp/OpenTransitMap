@@ -4,6 +4,7 @@ Status: Accepted
 Date: 2025-09-21
 
 ## TL;DR
+
 - Define cross‑service contracts as Zod schemas in `packages/types`; derive TS types via `z.infer`.
 - Validate at boundaries (ingest, before hot‑state write, before emitting deltas) and typecheck everywhere.
 - Version payload envelopes via `schemaVersion` for safe evolution.
@@ -42,6 +43,7 @@ Define all cross‑service contracts in `packages/types/src/schemas/` using Zod 
 - Validation boundaries: normalize at ingest; validate before writing hot state and before emitting deltas.
 
 ### Normalization vs Validation
+
 - Validation (public inputs): schemas reject invalid data and never silently transform it. Example: out‑of‑bounds coordinates or invalid bbox shapes fail with clear error messages.
 - Normalization (internal ingest): provider data may be clamped or cleaned, with metrics emitted when adjustments occur. Example: clamp coordinates to Web Mercator bounds, quantize bboxes before computing scope keys.
 - Rationale: callers get predictable behavior at the API boundary, while ingest can be resilient to upstream quirks without corrupting downstream state.
@@ -49,16 +51,20 @@ Define all cross‑service contracts in `packages/types/src/schemas/` using Zod 
 ## What / Why / How
 
 ### What
+
 Shared Zod schemas serve as the single source of truth for our domain (events, frames, viewport). Types are inferred for compile‑time safety.
 
 ### Why
+
 - Runtime validation catches bad inputs at boundaries, preventing corrupt state and hard‑to‑debug errors downstream.
 - Co‑locating schemas with code is simpler than separate schema registries for our scope; Zod ergonomics fit TS well.
 
 ### How
+
 - Author schemas with `.strict()` objects and branded primitives (e.g., `Id`, `Latitude`).
 - Export types via `z.infer`; consumers import types, not shapes.
 - Evolve via envelope `schemaVersion` and additive changes; bump version for breaking changes.
 
 ### Analogy
+
 Schemas are blueprints; `z.infer` is the parts list. Builders (services) check blueprints at the door to ensure only valid parts enter the workshop.

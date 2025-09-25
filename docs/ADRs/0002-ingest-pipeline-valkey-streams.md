@@ -4,6 +4,7 @@ Status: Accepted
 Date: 2025-09-21
 
 ## TL;DR
+
 - Use Valkey Streams as the event bus between ingest, normalize, process, and broadcast.
 - Topics include `events.normalized` (canonical events) and `state.delta` (vehicle deltas). Retention is short (e.g., minutes) with `MAXLEN ~ N`.
 - Consumer groups (`normalizer`, `processor`, `broadcaster`) cooperatively read; we monitor backlog and trim.
@@ -48,21 +49,26 @@ Use Valkey Streams as the event bus for ingest and deltas with aggressive retent
 ## What / Why / How
 
 ### What
+
 Valkey Streams act as the backbone for passing canonical `TransitEvent`s and reduced `VehicleDelta`s across pipeline stages with short replay.
 
 ### Why
+
 - Lightweight and easy to run locally (Docker Compose), matching our current scale.
 - Supports consumer groups and limited replay without the operational overhead of Kafka.
 
 ### How
+
 - Writers `XADD` to well‑named topics with `MAXLEN ~ N` to bound memory.
 - Readers join consumer groups, `XREADGROUP` with sensible timeouts, and acknowledge with `XACK`.
 - Backpressure and retries are handled via pending entries lists; monitoring ensures no starvation.
 
 ### Analogy
+
 Think of Streams like a rolling whiteboard: new notes are added on the right, old notes get erased as space runs out. Teams (consumer groups) copy notes to their notebooks (state) and check them off when done.
 
 ### Sequence (High‑Level)
+
 ```mermaid
 sequenceDiagram
   autonumber

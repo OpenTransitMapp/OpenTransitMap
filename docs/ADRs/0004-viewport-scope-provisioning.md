@@ -4,6 +4,7 @@ Status: Accepted
 Date: 2025-09-21
 
 ## TL;DR
+
 - POST a bbox `{ south, west, north, east, zoom? }` with `cityId` to mint a reusable `scopeId` and get a scoped snapshot.
 - Server clamps, validates, quantizes (default ~1e‑4°), computes an idempotent key from `cityId + quantized bbox (+ schemaVersion)`, and caches the ScopeDefinition.
 - `zoom` is a hint for shaping (cluster/limits), not part of identity. Optionally accept `externalScopeKey` for client‑driven idempotency.
@@ -37,7 +38,7 @@ Introduce a POST‑based scope provisioning API that mints a reusable `scopeId`:
 ```json
 {
   "cityId": "nyc",
-  "bbox": { "south": 40.70, "west": -74.02, "north": 40.76, "east": -73.96, "zoom": 12 },
+  "bbox": { "south": 40.7, "west": -74.02, "north": 40.76, "east": -73.96, "zoom": 12 },
   "externalScopeKey": "optional-client-key"
 }
 ```
@@ -47,21 +48,24 @@ Response (conceptual): returns `ScopedTrainsFrame` and `scopeId`.
 ## What / Why / How
 
 ### What
+
 Scopes define a reusable viewport over a city. Clients POST a bbox; the server quantizes it, stores a ScopeDefinition, and returns a `scopeId` plus a scoped snapshot for immediate use.
 
 ### Why
+
 - Single input shape (bbox) simplifies clients and server.
 - Quantization prevents tiny drags from creating new scopes; it enables idempotent `scopeId`s and cache reuse.
 - A zoom hint lets the server shape payloads (cluster/limit) without fragmenting identities.
 
 ### How
+
 - Clamp → Validate → Quantize bbox, then compute a deterministic key from `cityId + quantized bbox (+ schemaVersion)`.
 - Prefer `externalScopeKey` when provided (after validating bbox) for idempotent client-driven provisioning.
 - Lookup existing scope by key; on miss, insert with TTL and compute the scoped snapshot.
 
 ### Analogy
-Think of a scope as a photo frame on the map. The bbox is the frame’s edges, quantization snaps the frame to a neat grid so tiny nudges don’t create a “new frame,” and the zoom hint tells how much detail to include in the print.
 
+Think of a scope as a photo frame on the map. The bbox is the frame’s edges, quantization snaps the frame to a neat grid so tiny nudges don’t create a “new frame,” and the zoom hint tells how much detail to include in the print.
 
 ## Consequences
 
@@ -80,12 +84,15 @@ Think of a scope as a photo frame on the map. The bbox is the frame’s edges, q
 - ScopeIds are derived from `cityId + quantized bbox + schemaVersion` (hashed as needed) for idempotency. If clients provide `externalScopeKey`, prefer it for lookup/insert (after validation) to ensure idempotent behavior across app restarts.
 
 ### Web Mercator & Bounds
+
 - Web Mercator (EPSG:3857) is the standard web map projection. Clamp latitude to ±85.05113° and longitude to ±180° to stay within its valid domain. Internally we project to meters; input/identity use WGS84 degrees.
 
 ### Antimeridian Handling (Future)
+
 - Current schema rejects `east < west`. If we need to support crossing the dateline, split the request into two scopes (west and east segments) to keep filtering and caching logic simple.
 
 ### Server Behavior (Recommended)
+
 - Reject invalid bboxes (north < south, east < west) with clear messages.
 - Quantize bbox (e.g., default 1e‑4 deg ≈ 11 m; optionally vary with zoom ≈ 1–2 px).
 - Exclude `zoom` from identity; use it only to shape payloads (cluster/limit thresholds).
@@ -93,15 +100,18 @@ Think of a scope as a photo frame on the map. The bbox is the frame’s edges, q
 - Return `ScopedTrainsFrame` and `scopeId`; subsequent polling or streams use the `scopeId`.
 
 ### Client Guidance
+
 - Preferred: derive bbox via `map.getBounds()` and send `zoom: Math.round(map.getZoom())` (server clamps 0–22).
 - Debounce re-provisioning and only POST when bbox changes beyond quantization.
 - Avoid massive bboxes at low zooms; pan/zoom closer or accept clustered responses.
 
 Map config checklist (region‑bounded views)
+
 - MapLibre/Mapbox GL: `maxBounds: <region bbox>`, `renderWorldCopies: false`
 - Leaflet: `setMaxBounds(<region bbox>)`, `worldCopyJump: false`
 
 ### Sequence (Provisioning)
+
 ```mermaid
 sequenceDiagram
   autonumber
@@ -119,6 +129,7 @@ sequenceDiagram
 ```
 
 ## Future Evolution
+
 - Dynamic quantization tied to zoom and screen DPI.
 - Client-provided idempotency keys at scale (key format conventions and quotas).
 - Antimeridian support via split scopes or wrapped coordinates.

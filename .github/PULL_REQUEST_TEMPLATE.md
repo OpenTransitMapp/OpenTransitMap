@@ -1,5 +1,7 @@
 ## Title
+
 Short, action‑oriented title. Include a risk tag prefix, enforced by CI:
+
 - [low-risk] Your concise title here
 - [med-risk] Your concise title here
 - [high-risk] Your concise title here
@@ -7,23 +9,36 @@ Short, action‑oriented title. Include a risk tag prefix, enforced by CI:
 Example: `[low-risk] fix: tighten bbox schema and add tests`
 
 ## What
+
 Describe exactly what changed. Focus on behavior and user‑visible effects.
 
+- Schemas: list any added/updated/removed Zod schemas (paths, names)
+- Contracts: note any new fields, stricter refinements, or strict() changes
+- Utils: list new helpers (e.g., quantization/clamping/keys) and where they’re used
+
 ## Why
+
 Problem/motivation and constraints. Link issues/ADRs if applicable.
 
+- Contracts: why these schemas/fields/constraints are needed now
+- Validation vs normalization: what is rejected vs cleaned later (if applicable)
+- Alternatives considered (brief) if schemas could have evolved differently
+
 ## Scope of Change
+
 - Services/Packages touched: (e.g., `services/backend`, `packages/types`)
 - APIs/Contracts: (new/changed/unchanged). If changed, link to schema diff.
 - Data/Storage: (none/changed/migration?)
 
 ## Risk & Impact
-- Risk level: [ ] Low  [ ] Medium  [ ] High
-- Backwards compatibility: [ ] Yes  [ ] No (explain breaking changes below)
+
+- Risk level: [ ] Low [ ] Medium [ ] High
+- Backwards compatibility: [ ] Yes [ ] No (explain breaking changes below)
 - Performance implications: (none/describe)
 - Security/Privacy considerations: (none/describe)
 
 ## How I Tested
+
 Select all that apply and add details (commands, files, cases). Prefer Make targets.
 
 - [ ] Unit tests
@@ -45,14 +60,17 @@ Select all that apply and add details (commands, files, cases). Prefer Make targ
 - [ ] Screenshots / logs / sample requests & responses (attach below)
 
 ## Rollout Plan
+
 - Deployment steps or flags/toggles
 - Observability: metrics/logs/traces added/updated
 - Rollback: how to revert safely
 
 ## Breaking Changes (if any)
+
 - Describe the break and migration path. Call out client actions needed.
 
 ## Checklist
+
 - [ ] Linked issue(s) and/or ADR(s)
 - [ ] Updated docs (README/Architecture/ADRs) if behavior or contracts changed
 - [ ] Added/updated tests (cover happy paths, edge cases, and failures)
@@ -62,4 +80,5 @@ Select all that apply and add details (commands, files, cases). Prefer Make targ
 - [ ] Backwards compatibility considered (or documented as breaking)
 
 ## Reviewer Notes
+
 Anything that will help reviewers (focus areas, follow‑ups, known gaps).

@@ -19,3 +19,4 @@ build/
 *.tsbuildinfo
 **/*.tsbuildinfo
 
+.yarn/install-state.gz
