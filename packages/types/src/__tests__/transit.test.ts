@@ -44,6 +44,13 @@ describe('transit schemas', () => {
     expect(VehiclePositionSchema.safeParse({ ...ok, speedMps: -1 }).success).toBe(false);
   });
 
+  it('rejects NaN/Infinity for bearing and speed', () => {
+    const base = { id: 'veh-1', coordinate: { lat: 0, lng: 0 }, updatedAt: '2024-01-01T00:00:00Z' };
+    expect(VehiclePositionSchema.safeParse({ ...base, bearing: NaN }).success).toBe(false);
+    expect(VehiclePositionSchema.safeParse({ ...base, speedMps: Infinity }).success).toBe(false);
+    expect(VehiclePositionSchema.safeParse({ ...base, speedMps: -Infinity }).success).toBe(false);
+  });
+
   it('validates Trip schema with optional fields and rejects invalid direction', () => {
     const minimal = {
       id: 'trip-1',
@@ -70,7 +77,7 @@ describe('transit schemas', () => {
     expect(RouteSchema.safeParse({ ...base, color: '#abcdef' }).success).toBe(true);
     expect(RouteSchema.safeParse({ ...base, textColor: '#ABC' }).success).toBe(true);
     expect(RouteSchema.safeParse({ ...base, color: 'ABCDEF' }).success).toBe(false);
-    expect(RouteSchema.safeParse({ ...base, textColor: '#1234' }).success).toBe(false);
+    expect(RouteSchema.safeParse({ ...base, textColor: '#1234' }).success).toBe(true);
   });
 
   it.each([

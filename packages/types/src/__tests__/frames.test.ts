@@ -27,6 +27,24 @@ describe('frames schemas', () => {
     expect(ScopedTrainsFrameSchema.safeParse(scoped).success).toBe(true);
   });
 
+  it('accepts empty vehicles arrays', () => {
+    const frame = {
+      cityId: 'nyc',
+      at: '2024-01-01T00:00:00Z',
+      vehicles: [],
+    };
+    expect(TrainsFrameSchema.safeParse(frame).success).toBe(true);
+
+    const scoped = {
+      scopeId: 'scope-1',
+      bbox: { south: 40, west: -74.5, north: 41, east: -73 },
+      cityId: 'nyc',
+      at: '2024-01-01T00:00:00Z',
+      vehicles: [],
+    };
+    expect(ScopedTrainsFrameSchema.safeParse(scoped).success).toBe(true);
+  });
+
   it('accepts optional checksum and rejects invalid vehicle entries', () => {
     const withChecksum = {
       cityId: 'nyc',

@@ -71,6 +71,28 @@ describe('events schemas', () => {
     expect(VehicleUpsertEventSchema.safeParse(event).success).toBe(ok);
   });
 
+  it('rejects extra top-level keys on upsert/remove events (strict)', () => {
+    const upsertExtra = {
+      kind: 'vehicle.upsert' as const,
+      at: '2024-01-01T00:00:00Z',
+      cityId: 'nyc',
+      payload: { id: 'veh-1', coordinate: { lat: 1, lng: 2 }, updatedAt: '2024-01-01T00:00:00Z' },
+      source: 'providerA',
+      extra: true,
+    } as any;
+    expect(VehicleUpsertEventSchema.safeParse(upsertExtra).success).toBe(false);
+
+    const removeExtra = {
+      kind: 'vehicle.remove' as const,
+      at: '2024-01-01T00:00:00Z',
+      cityId: 'nyc',
+      payload: { id: 'veh-1' },
+      source: 'providerA',
+      extra: 'x',
+    } as any;
+    expect(VehicleRemoveEventSchema.safeParse(removeExtra).success).toBe(false);
+  });
+
   it.each([
     [
       'valid delta: one upsert, one remove, all fields valid',

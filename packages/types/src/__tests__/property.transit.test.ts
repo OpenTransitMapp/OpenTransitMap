@@ -6,10 +6,10 @@ describe('property-based: transit schemas', () => {
   it('VehiclePosition accepts valid random coordinates and timestamps', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1 }),
+        fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
         fc.double({ min: -90, max: 90, noNaN: true, noDefaultInfinity: true }),
         fc.double({ min: -180, max: 180, noNaN: true, noDefaultInfinity: true }),
-        fc.date(),
+        fc.date({ min: new Date('1800-01-01T00:00:00.000Z'), max: new Date('9999-12-31T23:59:59.999Z') }),
         fc.option(fc.double({ min: 0, max: 359.9999, noNaN: true, noDefaultInfinity: true })),
         fc.option(fc.double({ min: 0, max: 100, noNaN: true, noDefaultInfinity: true })),
         (id, lat, lng, d, bearingOpt, speedOpt) => {
@@ -26,4 +26,3 @@ describe('property-based: transit schemas', () => {
     );
   });
 });
-

@@ -162,6 +162,69 @@ describe('common schemas', () => {
   });
 
   it.each([
+    ['#RGBA', true],
+    ['#RRGGBBAA', true],
+  ])('ColorHex valid alpha examples (%s) -> %s', (label, ok) => {
+    const examples: Record<string, string> = {
+      '#RGBA': '#1a2b',
+      '#RRGGBBAA': '#112233cc',
+    };
+    expect(ColorHexSchema.safeParse(examples[label]).success).toBe(ok);
+  });
+
+  it.each([
+    ['#12345', false],
+    ['#zzzz', false],
+    ['112233', false],
+  ])('ColorHex invalid examples (%s) -> %s', (hex, ok) => {
+    expect(ColorHexSchema.safeParse(hex).success).toBe(ok);
+  });
+
+  it('IsoDateTime rejects out-of-range dates and timezone offsets with clear messages', () => {
+    const before = '1799-12-31T23:59:59Z';
+    const after = '10000-01-01T00:00:00Z';
+    const offset = '2024-01-01T00:00:00+01:00';
+
+    const r1 = IsoDateTimeStringSchema.safeParse(before);
+    expect(r1.success).toBe(false);
+    if (!r1.success) {
+      expect(r1.error.issues.some(i => i.message.includes('between 1800-01-01'))).toBe(true);
+    }
+
+    const r2 = IsoDateTimeStringSchema.safeParse(after);
+    expect(r2.success).toBe(false);
+    if (!r2.success) {
+      expect(r2.error.issues.some(i => i.message.includes('between 1800-01-01'))).toBe(true);
+    }
+
+    const r3 = IsoDateTimeStringSchema.safeParse(offset);
+    expect(r3.success).toBe(false);
+  });
+
+  it('IANA timezone invalids produce the expected error message', () => {
+    const bad1 = 'America/New York';
+    const bad2 = 'Etc/GMT+25';
+    const r1 = IanaTimezoneSchema.safeParse(bad1);
+    const r2 = IanaTimezoneSchema.safeParse(bad2);
+    expect(r1.success).toBe(false);
+    expect(r2.success).toBe(false);
+    if (!r1.success) expect(r1.error.issues[0].message).toContain('Invalid IANA timezone');
+    if (!r2.success) expect(r2.error.issues[0].message).toContain('Invalid IANA timezone');
+  });
+
+  it('ColorHex emits targeted messages for common mistakes', () => {
+    const noHash = '112233';
+    const badLen = '#12345';
+    const badDigit = '#12xz';
+    const n1 = ColorHexSchema.safeParse(noHash);
+    const n2 = ColorHexSchema.safeParse(badLen);
+    const n3 = ColorHexSchema.safeParse(badDigit);
+    expect(n1.success).toBe(false);
+    expect(n2.success).toBe(false);
+    expect(n3.success).toBe(false);
+  });
+
+  it.each([
     ['Africa/Abidjan', true],
     ['Africa/Accra', true],
     ['Africa/Addis_Ababa', true],
