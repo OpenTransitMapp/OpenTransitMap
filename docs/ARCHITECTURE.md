@@ -59,10 +59,10 @@ sequenceDiagram
 - **VehicleDelta**: Minimal change event describing vehicles that appeared, moved, or were removed since the previous frame. Always carries latest geometry, identifiers, status, and the `scopeId` it was derived from.
 - **scopeId**: Stable identifier (e.g., hashed viewport params + schema version) used by clients to correlate a scoped snapshot with subsequent deltas and cache entries (`viewport:<hash>`).
 - **cityId**: Identifier for the operating area (`nyc`, `tokyo`, etc.) that selects the static GTFS bundle, tile set, and cache namespace used to fulfill a request.
-- **Viewport request payload**: JSON body posted to `/api/trains/scopes` with `cityId` and one of:
-  - `tiles`: array of slippy tile strings (`"z/x/y"`), used by map clients.
-  - `bbox`: object `{ south, west, north, east, zoom? }`, used by non-tiled consumers.
-    The backend normalizes whichever shape is provided before generating the `scopeId` and slicing the snapshot.
+- **BBox**: Geographic bounding box `{ south, west, north, east, zoom? }` (WGS84 degrees). The backend quantizes bbox coordinates to a fixed precision (e.g., 1e‑6) before minting a scope.
+- **Quantization**: Rounding bbox coordinates to a fixed precision to make cache and scope IDs idempotent across nearly-identical inputs.
+- **SchemaVersion**: Version tag included in event envelopes to support safe schema evolution.
+- **Viewport request payload**: JSON body posted to `/api/trains/scopes` with `cityId` and `bbox` `{ south, west, north, east, zoom? }`. The backend quantizes the bbox before generating an idempotent `scopeId` and slicing the snapshot.
 - **Scope provisioning**: `POST /api/trains/scopes` mints a reusable `scopeId`, stores the normalized viewport definition, and returns the scoped snapshot. Subsequent GET/SSE calls use `scope=<scopeId>` for shareable, URL-safe access.
 - **City pack**: Prebuilt bundle for a transit area containing basemap tiles, transit overlays, sprites, glyphs, and style JSON served via CDN or TileServer GL.
 - **Static overlay**: Vector tiles derived from GTFS static data (routes, stations, transfers) rendered consistently with the transit agency’s official branding.

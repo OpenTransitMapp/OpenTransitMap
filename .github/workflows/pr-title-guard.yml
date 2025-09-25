@@ -1,0 +1,20 @@
+name: PR Title Guard
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-title:
+    name: Enforce risk tag in PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate title has [low-risk]|[med-risk]|[high-risk]
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title || '';
+            const re = /\[(low|med|high)-risk\]/i;
+            if (!re.test(title)) {
+              core.setFailed(`PR title must include a risk tag: [low-risk], [med-risk], or [high-risk]. Current title: "${title}"`);
+            }

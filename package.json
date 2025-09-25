@@ -12,7 +12,7 @@
     "typecheck": "tsc -b",
     "build": "yarn workspaces foreach --all --topological --verbose --interlaced run build",
     "start": "yarn workspaces foreach --all --parallel --interlaced run start",
-    "test": "yarn workspaces foreach --all --parallel --interlaced run test || true",
+    "test": "yarn workspaces foreach --all --parallel --interlaced run test",
     "format": "prettier --write '**/*.{json,md,yml,yaml}'",
     "format:check": "prettier --check '**/*.{json,md,yml,yaml}'",
     "prepare": "husky"

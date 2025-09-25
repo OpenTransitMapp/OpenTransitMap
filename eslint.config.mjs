@@ -50,4 +50,13 @@ export default [
       },
     },
   },
+  {
+    files: ['**/*.test.ts', '**/*.spec.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.vitest,
+        ...globals.node,
+      },
+    },
+  },
 ];

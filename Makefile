@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: help install start lint typecheck build test constraints ci format format-check up down
+.PHONY: help install start lint typecheck build test constraints ci format format-check renovate-validate up down
 
 # Always use Corepack to run Yarn (no global Yarn, no vendored yarnPath)
 YARN := corepack yarn
@@ -16,6 +16,7 @@ help:
 	@echo "  ci           constraints + lint + typecheck + build"
 	@echo "  format       run Prettier on JSON/MD/YAML"
 	@echo "  format-check check formatting (no changes)"
+	@echo "  renovate-validate  validate renovate.json via Docker"
 	@echo "  up           docker compose up --build"
 	@echo "  down         docker compose down -v"
 
@@ -39,6 +40,9 @@ test:
 
 constraints:
 	$(YARN) constraints
+
+renovate-validate:
+	npx --yes --package renovate -- renovate-config-validator --strict
 
 format:
 	$(YARN) format
