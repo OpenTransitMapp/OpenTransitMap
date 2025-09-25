@@ -4,3 +4,4 @@ export * from './schemas/transit.js';
 export * from './schemas/viewport.js';
 export * from './schemas/events.js';
 export * from './schemas/frames.js';
+export * from './utils/scope.js';

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { IdSchema, NonEmptyStringSchema } from './common.js';
+import { IdSchema, NonEmptyStringSchema, IsoDateTimeStringSchema } from './common.js';
 
 /** City identifier (e.g., `nyc`, `tokyo`). */
 export const CityIdSchema = NonEmptyStringSchema.brand('CityId').describe('City/operating area identifier');
@@ -8,13 +8,6 @@ export type CityId = z.infer<typeof CityIdSchema>;
 /** Opaque, minted identifier for a viewport scope. */
 export const ScopeIdSchema = IdSchema.brand('ScopeId').describe('Minted viewport scope identifier');
 export type ScopeId = z.infer<typeof ScopeIdSchema>;
-
-/** Slippy tile "z/x/y" string. */
-export const SlippyTileSchema = z
-  .string()
-  .regex(/^\d+\/\d+\/\d+$/, 'Expected slippy tile string "z/x/y"')
-  .describe('Slippy tile identifier (z/x/y)');
-export type SlippyTile = z.infer<typeof SlippyTileSchema>;
 
 /** Bounding box request. */
 export const BBoxSchema = z
@@ -34,14 +27,15 @@ export type BBox = z.infer<typeof BBoxSchema>;
 export const ViewportRequestSchema = z
   .object({
     cityId: CityIdSchema,
-    tiles: z.array(SlippyTileSchema).nonempty().optional(),
-    bbox: BBoxSchema.optional(),
+    bbox: BBoxSchema,
+    externalScopeKey: z
+      .string()
+      .min(1)
+      .max(256)
+      .optional()
+      .describe('Optional client-provided idempotency key for scope provisioning'),
   })
-  .refine((v) => !!v.tiles !== !!v.bbox, {
-    message: 'Provide exactly one of "tiles" or "bbox"',
-    path: ['tiles'],
-  })
-  .describe('Request payload to mint a viewport scope');
+  .describe('Request payload to mint a viewport scope (bbox-only)');
 export type ViewportRequest = z.infer<typeof ViewportRequestSchema>;
 
 /** Normalized, stored scope definition. */
@@ -51,9 +45,7 @@ export const ScopeDefinitionSchema = z
     cityId: CityIdSchema,
     // store as bbox; tiles can be derived as needed
     bbox: BBoxSchema,
-    createdAt: z
-      .string()
-      .describe('ISO timestamp when the scope was minted'),
+    createdAt: IsoDateTimeStringSchema.describe('ISO timestamp when the scope was minted'),
   })
   .strict()
   .describe('Stored, normalized scope definition');

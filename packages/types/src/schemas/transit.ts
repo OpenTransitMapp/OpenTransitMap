@@ -2,30 +2,11 @@ import { z } from 'zod';
 import {
   IdSchema,
   NonEmptyStringSchema,
-  UrlSchema,
+  HttpUrlSchema,
   CoordinateSchema,
   IsoDateTimeStringSchema,
 } from './common.js';
-
-/** IANA timezone identifier, e.g. `America/New_York`. */
-/** See: https://regexr.com/7ig42 */
-const IanaTimezoneRegex: RegExp = /^(?:(?:[A-Za-z_-]+\/[A-Za-z_-]+(?:\/[A-Za-z_-]+)?)|(?:Etc\/[A-Za-z0-9+-]+(?:\/[A-Za-z0-9]+)?|(?:CET|CST6CDT|EET|EST|EST5EDT|MET|MST|MST7MDT|PST8PDT|HST)))$/;
-export const IanaTimezoneSchema = z
-  .string()
-  .regex(IanaTimezoneRegex, 'Invalid IANA timezone')
-  .brand('IanaTimezone')
-  .describe('IANA timezone identifier (e.g., America/New_York)');
-/** Type of {@link IanaTimezoneSchema}. */
-export type IanaTimezone = z.infer<typeof IanaTimezoneSchema>;
-
-/** CSS hex color `#RRGGBB` or `#RGB`. */
-const ColorHexRegex: RegExp = /^#(?:[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-export const ColorHexSchema = z
-  .string()
-  .regex(ColorHexRegex, 'Invalid color format. Must be a 7-character hex code (e.g., #RRGGBB).')
-  .describe('Hex color #RRGGBB or #RGB');
-/** Type of {@link ColorHexSchema}. */
-export type ColorHex = z.infer<typeof ColorHexSchema>;
+import { IanaTimezoneSchema, ColorHexSchema } from './common.js';
 
 /** GTFS route_type numeric code (0..1702). */
 export const RouteTypeSchema = z
@@ -43,7 +24,7 @@ export const AgencySchema = z
   .object({
     id: IdSchema.describe('Agency identifier'),
     name: NonEmptyStringSchema.describe('Public display name'),
-    url: UrlSchema.describe('Agency homepage URL'),
+    url: HttpUrlSchema.describe('Agency homepage URL'),
     timezone: IanaTimezoneSchema.describe('Primary local timezone'),
     lang: z.string().min(2).optional().describe('BCP-47 language tag (optional)'),
     phone: z.string().optional().describe('Public contact phone (optional)'),
@@ -144,7 +125,7 @@ export type VehiclePosition = z.infer<typeof VehiclePositionSchema>;
 /** Metadata about an ingested feed snapshot. */
 export const FeedMetadataSchema = z
   .object({
-    source: UrlSchema.or(NonEmptyStringSchema).describe('Origin URL or identifier'),
+    source: HttpUrlSchema.or(NonEmptyStringSchema).describe('Origin URL or identifier'),
     fetchedAt: IsoDateTimeStringSchema.describe('Ingestion timestamp (ISO 8601)'),
     version: NonEmptyStringSchema.optional().describe('Upstream feed version (optional)'),
   })
