@@ -127,11 +127,7 @@
     {
       "groupName": "Testing",
       "matchManagers": ["npm"],
-      "matchPackageNames": [
-        "/^(jest|vitest|uvu)$/",
-        "/^supertest$/",
-        "/^@testing-library\\//"
-      ],
+      "matchPackageNames": ["/^(jest|vitest|uvu)$/", "/^supertest$/", "/^@testing-library\\//"],
       "schedule": ["on saturday"],
       "automerge": false,
       "matchUpdateTypes": ["minor", "patch"]
