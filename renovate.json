@@ -10,7 +10,7 @@
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
   "enabledManagers": ["npm", "dockerfile", "docker-compose", "github-actions"],
-  "stabilityDays": 5,
+  "minimumReleaseAge": "5 days",
   "ignoreUnstable": true,
   "rangeStrategy": "bump",
   "rebaseWhen": "conflicted",
@@ -38,7 +38,7 @@
     "enabled": false,
     "extends": [":semanticCommitTypeAll(chore)"],
     "commitMessageAction": "lockfile",
-    "schedule": ["every saturday at 04:00"],
+    "schedule": ["on saturday"],
     "automerge": false
   },
   "branchPrefix": "renovate/",
@@ -58,14 +58,13 @@
       "matchPackageNames": ["node"],
       "allowedVersions": "20.* || 22.*",
       "pinDigests": true,
-      "matchUpdateTypes": ["minor", "patch", "digest"],
-      "schedule": ["every wednesday"],
+      "schedule": ["on wednesday"],
       "automerge": false
     },
     {
       "groupName": "Docker base images",
       "matchManagers": ["dockerfile"],
-      "schedule": ["every wednesday"],
+      "schedule": ["on wednesday"],
       "pinDigests": true,
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": false
@@ -73,7 +72,7 @@
     {
       "groupName": "Docker Compose images",
       "matchManagers": ["docker-compose"],
-      "schedule": ["every wednesday"],
+      "schedule": ["on wednesday"],
       "pinDigests": true,
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": false
@@ -81,55 +80,59 @@
     {
       "groupName": "TypeScript toolchain",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^typescript$",
-        "^ts-node$",
-        "^ts-jest$",
-        "^tsx$",
-        "^@types/",
-        "^eslint(-|$)",
-        "^@typescript-eslint/",
-        "^prettier$"
+      "matchPackageNames": [
+        "/^typescript$/",
+        "/^ts-node$/",
+        "/^ts-jest$/",
+        "/^tsx$/",
+        "/^@types\\//",
+        "/^eslint(-|$)/",
+        "/^@typescript-eslint\\//",
+        "/^prettier$/"
       ],
-      "schedule": ["every saturday at 04:00"],
+      "schedule": ["on saturday"],
       "automerge": false,
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
       "groupName": "Map stack",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^maplibre-gl$",
-        "^@maplibre/",
-        "^@types/mapbox__vector-tile$",
-        "^pbf$",
-        "^vt-pbf$",
-        "^geojson-.*",
-        "^@turf/"
+      "matchPackageNames": [
+        "/^maplibre-gl$/",
+        "/^@maplibre\\//",
+        "/^@types\\/mapbox__vector-tile$/",
+        "/^pbf$/",
+        "/^vt-pbf$/",
+        "/^geojson-.*/",
+        "/^@turf\\//"
       ],
-      "schedule": ["every saturday at 04:00"],
+      "schedule": ["on saturday"],
       "automerge": false,
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
       "groupName": "Backend core libs",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^zod$",
-        "^fastify$|^express$",
-        "^undici$|^node-fetch$",
-        "^ws$",
-        "^dotenv(-expand)?$",
-        "^pino(-|$)"
+      "matchPackageNames": [
+        "/^zod$/",
+        "/^(fastify|express)$/",
+        "/^(undici|node-fetch)$/",
+        "/^ws$/",
+        "/^dotenv(-expand)?$/",
+        "/^pino(-|$)/"
       ],
-      "schedule": ["every monday"],
+      "schedule": ["on monday"],
       "automerge": false
     },
     {
       "groupName": "Testing",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": ["^jest$|^vitest$|^uvu$", "^supertest$", "^@testing-library/"],
-      "schedule": ["every saturday at 04:00"],
+      "matchPackageNames": [
+        "/^(jest|vitest|uvu)$/",
+        "/^supertest$/",
+        "/^@testing-library\\//"
+      ],
+      "schedule": ["on saturday"],
       "automerge": false,
       "matchUpdateTypes": ["minor", "patch"]
     },
@@ -137,14 +140,14 @@
       "groupName": "DevDependencies (weekly batch)",
       "matchManagers": ["npm"],
       "matchDepTypes": ["devDependencies"],
-      "schedule": ["every saturday at 04:00"],
+      "schedule": ["on saturday"],
       "automerge": false,
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
       "groupName": "GitHub Actions",
       "matchManagers": ["github-actions"],
-      "schedule": ["every tuesday"],
+      "schedule": ["on tuesday"],
       "automerge": false
     },
     {
