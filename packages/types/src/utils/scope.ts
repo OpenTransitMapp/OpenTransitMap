@@ -62,3 +62,13 @@ export function clampToWebMercator(bbox: BBox): BBox {
   const east = clamp(bbox.east, -180, 180);
   return { south, west, north, east };
 }
+
+/** Clamp a single coordinate (lat,lng) to Web Mercator domain. */
+export function clampCoordinate(lat: number, lng: number): { lat: number; lng: number } {
+  const MAX_LAT = 85.05113;
+  const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
+  return {
+    lat: clamp(lat, -MAX_LAT, MAX_LAT),
+    lng: clamp(lng, -180, 180),
+  };
+}

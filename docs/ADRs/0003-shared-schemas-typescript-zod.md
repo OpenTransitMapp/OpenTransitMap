@@ -41,6 +41,11 @@ Define all cross‑service contracts in `packages/types/src/schemas/` using Zod 
 - CI: lint + typecheck shared first; consumers pin schema versions.
 - Validation boundaries: normalize at ingest; validate before writing hot state and before emitting deltas.
 
+### Normalization vs Validation
+- Validation (public inputs): schemas reject invalid data and never silently transform it. Example: out‑of‑bounds coordinates or invalid bbox shapes fail with clear error messages.
+- Normalization (internal ingest): provider data may be clamped or cleaned, with metrics emitted when adjustments occur. Example: clamp coordinates to Web Mercator bounds, quantize bboxes before computing scope keys.
+- Rationale: callers get predictable behavior at the API boundary, while ingest can be resilient to upstream quirks without corrupting downstream state.
+
 ## What / Why / How
 
 ### What
