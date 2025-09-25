@@ -1,4 +1,5 @@
-import type { BBox } from '../schemas/viewport.js';
+import type { BBox, ScopeId } from '../schemas/viewport.js';
+import { ScopeIdSchema } from '../schemas/viewport.js';
 
 /** Clamp to integer zoom within [0,22]. Returns undefined if input is undefined. */
 export function clampZoom(zoom?: number): number | undefined {
@@ -26,11 +27,11 @@ export function quantizeBBox(bbox: BBox, precision = 1e-6): BBox {
  * Produce a deterministic, human-readable scope key string for idempotency.
  * Not cryptographic. Backends may hash this string if needed.
  */
-export function computeScopeKey(
+export function computeScopeId(
   cityId: string,
   bbox: BBox,
   opts?: { precision?: number; schemaVersion?: string; zoom?: number }
-): string {
+): ScopeId {
   const precision = opts?.precision ?? 1e-6;
   const schemaVersion = opts?.schemaVersion ?? '1';
   const q = quantizeBBox(bbox, precision);
@@ -45,8 +46,11 @@ export function computeScopeKey(
     fmt(q.north),
     fmt(q.east),
   ];
-  return parts.join('|');
+  // Ensure it conforms to ScopeId shape at runtime and return typed value
+  return ScopeIdSchema.parse(parts.join('|'));
 }
+
+// (computeScopeKey removed; use computeScopeId instead)
 
 /**
  * Clamp a bbox to the valid Web Mercator domain (EPSG:3857):

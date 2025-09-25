@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { IdSchema, NonEmptyStringSchema, IsoDateTimeStringSchema } from './common.js';
+import { NonEmptyStringSchema, IsoDateTimeStringSchema } from './common.js';
 
 /** City identifier (e.g., `nyc`, `tokyo`). */
-export const CityIdSchema = NonEmptyStringSchema.brand('CityId').describe('City/operating area identifier');
+export const CityIdSchema = NonEmptyStringSchema.describe('City/operating area identifier');
 export type CityId = z.infer<typeof CityIdSchema>;
 
-/** Opaque, minted identifier for a viewport scope. */
-export const ScopeIdSchema = IdSchema.brand('ScopeId').describe('Minted viewport scope identifier');
+/** Scope identifier (opaque string). */
+export const ScopeIdSchema = z.string().min(1).describe('Minted viewport scope identifier');
 export type ScopeId = z.infer<typeof ScopeIdSchema>;
 
 /** Bounding box request. */

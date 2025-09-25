@@ -14,7 +14,6 @@ export const RouteTypeSchema = z
   .int()
   .min(0)
   .max(1702)
-  .brand('RouteType')
   .describe('GTFS route_type code (0..1702)');
 /** Type of {@link RouteTypeSchema}. */
 export type RouteType = z.infer<typeof RouteTypeSchema>;
@@ -68,7 +67,6 @@ export type Route = z.infer<typeof RouteSchema>;
 /** Trip direction (0 or 1), mirroring GTFS `direction_id`. */
 export const TripDirectionSchema = z
   .union([z.literal(0), z.literal(1)])
-  .brand('TripDirection')
   .describe('Trip direction_id (0 or 1)');
 /** Type of {@link TripDirectionSchema}. */
 export type TripDirection = z.infer<typeof TripDirectionSchema>;
@@ -91,7 +89,6 @@ export type Trip = z.infer<typeof TripSchema>;
 /** High-level vehicle operational status. */
 export const VehicleStatusSchema = z
   .enum(['in_service', 'out_of_service', 'layover', 'deadhead'])
-  .brand('VehicleStatus')
   .describe('Operational status of a vehicle');
 /** Type of {@link VehicleStatusSchema}. */
 export type VehicleStatus = z.infer<typeof VehicleStatusSchema>;

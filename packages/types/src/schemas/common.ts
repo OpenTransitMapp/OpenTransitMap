@@ -20,9 +20,7 @@ export type NonEmptyString = z.infer<typeof NonEmptyStringSchema>;
  * Opaque identifier (string) branded as `Id`.
   * Use for stable keys like route, stop, trip, vehicle IDs. Do not encode semantics.
  */
-export const IdSchema = NonEmptyStringSchema.brand('Id').describe(
-  'Opaque identifier string (stable key; no semantics)'
-);
+export const IdSchema = NonEmptyStringSchema.describe('Opaque identifier string (stable key; no semantics)');
 /** Type of {@link IdSchema}. */
 export type Id = z.infer<typeof IdSchema>;
 
@@ -47,16 +45,12 @@ export const IsoDateTimeStringSchema = z
     },
     { message: 'Datetime must be between 1800-01-01T00:00:00.000Z and 9999-12-31T23:59:59.999Z' }
   )
-  .brand('IsoDateTimeString')
   .describe('ISO 8601 / RFC 3339 datetime string, UTC only, No timezone offsets are allowed; arbitrary sub-second precision is supported.');
 /** Type of {@link IsoDateTimeStringSchema}. */
 export type IsoDateTimeString = z.infer<typeof IsoDateTimeStringSchema>;
 
 /** Absolute URL string (e.g., https://example.com), branded as `Url`. */
-export const HttpUrlSchema = z
-  .url({ protocol: /^https?$/ })
-  .brand('Url')
-  .describe('HTTP/HTTPS URLs');
+export const HttpUrlSchema = z.url({ protocol: /^https?$/ }).describe('HTTP/HTTPS URLs');
 /** Type of {@link HttpUrlSchema}. */
 export type Url = z.infer<typeof HttpUrlSchema>;
 
@@ -65,7 +59,6 @@ export const LatitudeSchema = z
   .number()
   .gte(-90)
   .lte(90)
-  .brand('Latitude')
   .describe('Latitude in degrees [-90, 90]. A measure of distance North (positive) or South (negative) of the Equator (zero degrees)');
 /** Type of {@link LatitudeSchema}. */
 export type Latitude = z.infer<typeof LatitudeSchema>;
@@ -75,7 +68,6 @@ export const LongitudeSchema = z
   .number()
   .gte(-180)
   .lte(180)
-  .brand('Longitude')
   .describe('Longitude in degrees [-180, 180]. A measure of distance East (positive) or West (negative) of the Prime Meridian (zero degrees)');
 /** Type of {@link LongitudeSchema}. */
 export type Longitude = z.infer<typeof LongitudeSchema>;
@@ -95,7 +87,6 @@ export type Coordinate = z.infer<typeof CoordinateSchema>;
 export const IanaTimezoneSchema = z
   .string()
   .refine((tz) => IANA_TIMEZONES_SET.has(tz), 'Invalid IANA timezone')
-  .brand('IanaTimezone')
   .describe('IANA timezone identifier (e.g., America/New_York)');
 /** Type of {@link IanaTimezoneSchema}. */
 export type IanaTimezone = z.infer<typeof IanaTimezoneSchema>;

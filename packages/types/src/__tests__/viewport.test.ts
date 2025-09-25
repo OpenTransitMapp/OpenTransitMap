@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ViewportRequestSchema, ScopeDefinitionSchema, CityIdSchema } from '../schemas/viewport.js';
-import { quantizeBBox, clampZoom, computeScopeKey, clampToWebMercator } from '../utils/scope.js';
+import { quantizeBBox, clampZoom, computeScopeId, clampToWebMercator } from '../utils/scope.js';
 
 describe('viewport schemas', () => {
   it.each([
@@ -97,8 +97,8 @@ describe('viewport schemas', () => {
     expect(clampZoom(-5)).toBe(0);
     expect(clampZoom(30)).toBe(22);
 
-    const k1 = computeScopeKey('nyc', bbox, { precision: 1e-6, zoom: 12 });
-    const k2 = computeScopeKey('nyc', { ...bbox, south: bbox.south + 1e-7 }, { precision: 1e-6, zoom: 5 });
+    const k1 = computeScopeId('nyc', bbox, { precision: 1e-6, zoom: 12 });
+    const k2 = computeScopeId('nyc', { ...bbox, south: bbox.south + 1e-7 }, { precision: 1e-6, zoom: 5 });
     expect(k1).toBe(k2); // quantization makes the key stable; zoom excluded from identity
   });
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
-import { quantizeBBox, clampZoom, computeScopeKey } from '../utils/scope.js';
+import { quantizeBBox, clampZoom, computeScopeId } from '../utils/scope.js';
 
 describe('property-based: scope utils', () => {
   it('quantizeBBox preserves ordering north>=south and east>=west for random inputs', () => {
@@ -24,7 +24,7 @@ describe('property-based: scope utils', () => {
     );
   });
 
-  it('computeScopeKey is stable under small variations below precision and ignores zoom', () => {
+  it('computeScopeId is stable under small variations below precision and ignores zoom', () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1 }),
@@ -43,8 +43,8 @@ describe('property-based: scope utils', () => {
           const base = { south, west, north, east };
           const tiny = precision / 1000; // well below precision to avoid boundary rounding
           const varied = { south: south + tiny, west, north, east };
-          const k1 = computeScopeKey(cityId, base, { precision, zoom: z1 });
-          const k2 = computeScopeKey(cityId, varied as any, { precision, zoom: z2 });
+          const k1 = computeScopeId(cityId, base, { precision, zoom: z1 });
+          const k2 = computeScopeId(cityId, varied as any, { precision, zoom: z2 });
           expect(k1).toBe(k2);
         },
       ),
