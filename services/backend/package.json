@@ -8,6 +8,7 @@
     "test": "echo backend tests TBD"
   },
   "dependencies": {
+    "@open-transit-map/types": "workspace:*",
     "express": "4.19.2",
     "prom-client": "15.1.3"
   },

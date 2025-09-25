@@ -384,6 +384,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@open-transit-map/backend@workspace:services/backend"
   dependencies:
+    "@open-transit-map/types": "workspace:*"
     "@types/express": "npm:4.17.21"
     "@types/node": "npm:22.7.4"
     express: "npm:4.19.2"
@@ -403,7 +404,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@open-transit-map/types@workspace:packages/types":
+"@open-transit-map/types@workspace:*, @open-transit-map/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@open-transit-map/types@workspace:packages/types"
   dependencies:
