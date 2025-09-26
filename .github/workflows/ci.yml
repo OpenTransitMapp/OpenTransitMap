@@ -67,6 +67,22 @@ jobs:
         run: make install
       - name: Test and Generate Coverage Report
         run: make coverage-ci
+      - name: Comment coverage on PR (find existing)
+        if: ${{ github.event_name == 'pull_request' }}
+        id: find-coverage-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: github-actions[bot]
+          body-includes: coverage-summary: do not edit
+      - name: Comment coverage on PR (create or update)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-coverage-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: coverage-summary.md
+          edit-mode: replace
       - name: Upload backend coverage artifact
         uses: actions/upload-artifact@v4
         with:

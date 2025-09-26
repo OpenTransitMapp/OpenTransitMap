@@ -71,6 +71,19 @@ coverage-ci:
 	  echo "### Types (@open-transit-map/types)" >> "$$GITHUB_STEP_SUMMARY"; \
 	  cat /tmp/types-cov-summary.txt >> "$$GITHUB_STEP_SUMMARY"; \
 	fi
+	@# Also emit a reusable Markdown summary for PR comments
+	@{
+	  printf "<!-- coverage-summary: do not edit -->\n"; \
+	  printf "## Coverage Summary\n\n"; \
+	  printf "### Backend (@open-transit-map/backend)\n\n"; \
+	  printf '```text\n'; \
+	  cat /tmp/backend-cov-summary.txt; \
+	  printf '\n```\n\n'; \
+	  printf "### Types (@open-transit-map/types)\n\n"; \
+	  printf '```text\n'; \
+	  cat /tmp/types-cov-summary.txt; \
+	  printf '\n```\n'; \
+	} > coverage-summary.md
 
 constraints:
 	$(YARN) constraints
