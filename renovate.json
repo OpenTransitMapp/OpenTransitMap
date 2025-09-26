@@ -45,6 +45,7 @@
   "commitMessagePrefix": "",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
+  "commitMessageAction": "[{{#if isMajor}}high-risk{{else}}{{#if isMinor}}med-risk{{else}}low-risk{{/if}}{{/if}}] update",
   "schedule": ["every weekday after 01:00 and before 06:00"],
   "packageRules": [
     {
