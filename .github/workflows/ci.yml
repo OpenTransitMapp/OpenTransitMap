@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Verify
+  code-quality:
+    name: Code Quality Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,19 +25,19 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: make install
-      - name: Constraints
+      - name: Enforce Dependency Constraints
         run: make constraints
-      - name: Lint
+      - name: Lint Source Code
         run: make lint
-      - name: Typecheck
+      - name: Type Check
         run: make typecheck
-      - name: Format Check
+      - name: Check Code Formatting
         run: make format-check
 
-  build:
-    name: Build
+  build-artifacts:
+    name: Build Artifacts
     runs-on: ubuntu-latest
-    needs: [verify]
+    needs: [code-quality]
     steps:
       - uses: actions/checkout@v4
       - name: Enable Corepack
@@ -48,13 +48,13 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: make install
-      - name: Build all workspaces
+      - name: Build All Workspaces
         run: make build
 
-  test:
-    name: Test
+  test-and-coverage:
+    name: Run Tests & Collect Coverage
     runs-on: ubuntu-latest
-    needs: [verify]
+    needs: [code-quality]
     steps:
       - uses: actions/checkout@v4
       - name: Enable Corepack
@@ -74,7 +74,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: github-actions[bot]
-          body-includes: 'coverage-summary: do not edit'
+          body-includes: "coverage-summary: do not edit"
       - name: Comment coverage on PR (create or update)
         if: ${{ github.event_name == 'pull_request' }}
         uses: peter-evans/create-or-update-comment@v4
