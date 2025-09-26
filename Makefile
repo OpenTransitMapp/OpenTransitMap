@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: help install start lint typecheck build test constraints ci format format-check renovate-validate up down
+.PHONY: help install start start-backend start-frontend lint typecheck build test constraints ci format format-check renovate-validate up down
 
 # Always use Corepack to run Yarn (no global Yarn, no vendored yarnPath)
 YARN := corepack yarn
@@ -8,6 +8,8 @@ help:
 	@echo "Targets:"
 	@echo "  install      $(YARN) install --immutable"
 	@echo "  start        $(YARN) start (backend + frontend)"
+	@echo "  start-backend   start only backend workspace"
+	@echo "  start-frontend  start only frontend workspace"
 	@echo "  lint         eslint across packages"
 	@echo "  typecheck    tsc -b (project refs)"
 	@echo "  build        build all workspaces"
@@ -25,6 +27,12 @@ install:
 
 start:
 	$(YARN) start
+
+start-backend:
+	$(YARN) workspace @open-transit-map/backend start
+
+start-frontend:
+	$(YARN) workspace @open-transit-map/frontend start
 
 lint:
 	$(YARN) lint

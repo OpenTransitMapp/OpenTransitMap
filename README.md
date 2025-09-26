@@ -106,16 +106,27 @@ Per‑package start/build scripts (examples):
 - Types (`packages/types`)
   - `yarn build` → TypeScript build
 
-## Backend API (dev)
+## API Reference
 
-- `GET /healthz` → `{ ok: true, service: "backend", time: ISO8601 }`
-- `GET /metrics` → Prometheus metrics (default `text/plain; version=0.0.4`)
+- The API surface is defined by an OpenAPI spec generated from our Zod schemas and route contracts. This spec is the source of truth.
+- When the backend is running locally:
+  - Spec JSON (latest): `GET /openapi.json`
+  - Spec JSON (versioned): `GET /openapi/v1.json`
+  - Swagger UI (version dropdown): `GET /docs`
+  - Health: `GET /healthz`
+  - Metrics: `GET /metrics`
 
 Default port is `8080` (override with `PORT`). Example:
 
 ```bash
 PORT=3000 corepack yarn workspace @open-transit-map/backend start
 ```
+
+### API Versioning
+
+- All endpoint paths are versioned under `/api/v1`. Breaking changes will be introduced under `/api/v2` while keeping `/api/v1` available during deprecation windows.
+ - The docs are versioned too. The backend serves multiple OpenAPI documents and a single Swagger UI that can switch between them.
+   - Add new versions by updating `services/backend/src/openapi.ts` (extend `ApiMajorVersion` and reuse the `prefix = \`/api/${version}\``) and listing the version in `SUPPORTED_VERSIONS` inside `services/backend/src/routes/docs.ts`.
 
 ## Environment & Configuration
 
@@ -174,6 +185,39 @@ The hook runs, in order:
 GitHub Actions runs on push/PR using Make as the source of truth:
 
 - `make install` then `make ci` (constraints, lint, typecheck, build)
+
+## Testing Strategy
+
+We maintain a layered testing approach that aims for high confidence and low flakiness:
+
+- Unit
+  - Small surfaces (functions, schemas, modules) in isolation
+  - Cover both acceptance and rejection paths; assert clear error semantics
+
+- Property‑based
+  - Validate invariants with a wide range of generated inputs (see
+    [property‑based testing](https://en.wikipedia.org/wiki/Property-based_testing), e.g.,
+    [fast‑check](https://fast-check.dev/))
+  - Constrain inputs and keep runs deterministic to avoid flakiness
+
+- API / Integration
+  - Exercise versioned endpoints (e.g., `/api/v1`) end‑to‑end at the process boundary (e.g., with
+    [supertest](https://github.com/ladjs/supertest))
+  - Assert [HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status), response shapes,
+    and error behavior (happy/failure/edge cases)
+  - Follow [“parse, don’t validate”](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/):
+    parse inputs into trusted domain types (e.g., with [Zod](https://zod.dev/)), then normalize separately
+
+- End‑to‑End (optional where valuable)
+  - Validate user‑visible flows and contract consistency across services
+
+General expectations
+
+- Prefer [“parse, don’t validate”](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/);
+  keep transformations explicit and outside schemas
+- Test happy paths, edge cases, and failure modes with meaningful messages
+- Keep tests deterministic and independent from external networks/resources
+- Favor clarity and intent in tests over incidental implementation details
 
 ## Makefile
 
