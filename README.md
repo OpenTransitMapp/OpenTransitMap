@@ -125,8 +125,8 @@ PORT=3000 corepack yarn workspace @open-transit-map/backend start
 ### API Versioning
 
 - All endpoint paths are versioned under `/api/v1`. Breaking changes will be introduced under `/api/v2` while keeping `/api/v1` available during deprecation windows.
- - The docs are versioned too. The backend serves multiple OpenAPI documents and a single Swagger UI that can switch between them.
-   - Add new versions by updating `services/backend/src/openapi.ts` (extend `ApiMajorVersion` and reuse the `prefix = \`/api/${version}\``) and listing the version in `SUPPORTED_VERSIONS` inside `services/backend/src/routes/docs.ts`.
+- The docs are versioned too. The backend serves multiple OpenAPI documents and a single Swagger UI that can switch between them.
+  - Add new versions by updating `services/backend/src/openapi.ts` (extend `ApiMajorVersion` and reuse the `prefix = \`/api/${version}\``) and listing the version in `SUPPORTED_VERSIONS`inside`services/backend/src/routes/docs.ts`.
 
 ## Environment & Configuration
 
@@ -191,16 +191,19 @@ GitHub Actions runs on push/PR using Make as the source of truth:
 We maintain a layered testing approach that aims for high confidence and low flakiness:
 
 - Unit
+
   - Small surfaces (functions, schemas, modules) in isolation
   - Cover both acceptance and rejection paths; assert clear error semantics
 
 - Property‑based
+
   - Validate invariants with a wide range of generated inputs (see
     [property‑based testing](https://en.wikipedia.org/wiki/Property-based_testing), e.g.,
     [fast‑check](https://fast-check.dev/))
   - Constrain inputs and keep runs deterministic to avoid flakiness
 
 - API / Integration
+
   - Exercise versioned endpoints (e.g., `/api/v1`) end‑to‑end at the process boundary (e.g., with
     [supertest](https://github.com/ladjs/supertest))
   - Assert [HTTP status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status), response shapes,
