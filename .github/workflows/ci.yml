@@ -65,7 +65,7 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: make install
-      - name: Coverage (via Make)
+      - name: Test and Generate Coverage Report
         run: make coverage-ci
       - name: Upload backend coverage artifact
         uses: actions/upload-artifact@v4
