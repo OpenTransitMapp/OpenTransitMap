@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: help install start start-backend start-frontend lint typecheck build test constraints ci format format-check renovate-validate up down
+.PHONY: help install start start-backend start-frontend lint typecheck build test coverage coverage-summary constraints ci format format-check renovate-validate up down
 
 # Always use Corepack to run Yarn (no global Yarn, no vendored yarnPath)
 YARN := corepack yarn
@@ -14,6 +14,9 @@ help:
 	@echo "  typecheck    tsc -b (project refs)"
 	@echo "  build        build all workspaces"
 	@echo "  test         run workspace tests"
+	@echo "  coverage     run tests with coverage (all workspaces)"
+	@echo "  coverage-summary  print text coverage summary"
+ 
 	@echo "  constraints  enforce pinned dependency versions"
 	@echo "  ci           constraints + lint + typecheck + build"
 	@echo "  format       run Prettier on JSON/MD/YAML"
@@ -45,6 +48,14 @@ build:
 
 test:
 	$(YARN) test
+
+coverage:
+	$(YARN) coverage
+
+coverage-summary:
+	$(YARN) coverage:summary
+
+ 
 
 constraints:
 	$(YARN) constraints

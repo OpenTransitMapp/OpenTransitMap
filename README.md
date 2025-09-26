@@ -222,6 +222,30 @@ General expectations
 - Keep tests deterministic and independent from external networks/resources
 - Favor clarity and intent in tests over incidental implementation details
 
+## Test Coverage
+
+Generate coverage locally (all workspaces) and open the HTML report per package:
+
+```bash
+# Run coverage across workspaces
+make coverage
+
+# Open reports
+open services/backend/coverage/index.html
+open packages/types/coverage/index.html
+```
+
+In CI, the Test job:
+
+- Prints a coverage summary into the job summary
+- Uploads HTML and lcov reports as artifacts for each workspace
+
+You can also print a concise text summary locally:
+
+```bash
+make coverage-summary
+```
+
 ## Makefile
 
 The Makefile is required and the single source of truth for local and CI operations. See available commands with `make help`.

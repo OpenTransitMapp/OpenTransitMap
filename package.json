@@ -13,6 +13,8 @@
     "build": "yarn workspaces foreach --all --topological --verbose --interlaced run build",
     "start": "yarn workspaces foreach --all --parallel --interlaced run start",
     "test": "yarn workspaces foreach --all --parallel --interlaced run test",
+    "coverage": "yarn workspaces foreach --all --topological --verbose --interlaced run test:coverage",
+    "coverage:summary": "yarn workspaces foreach --all --topological --verbose --interlaced run test:coverage:summary",
     "format": "prettier --write '**/*.{json,md,yml,yaml}'",
     "format:check": "prettier --check '**/*.{json,md,yml,yaml}'",
     "prepare": "husky"
