@@ -65,5 +65,17 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: make install
-      - name: Run tests
-        run: make test
+      - name: Coverage (via Make)
+        run: make coverage-ci
+      - name: Upload backend coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: services/backend/coverage
+          if-no-files-found: warn
+      - name: Upload types coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-types
+          path: packages/types/coverage
+          if-no-files-found: warn

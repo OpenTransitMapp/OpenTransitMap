@@ -7,7 +7,13 @@ build/
 
 # Yarn Berry (v4) artifacts to ignore by default
 .yarn/*
-.yarn/install-state.gz
+	.yarn/install-state.gz
+
+# Test coverage outputs (do not commit)
+coverage/
+**/coverage/
+.nyc_output/
+lcov.info
 !.yarn/constraints.pro
 !.yarn/patches
 !.yarn/plugins

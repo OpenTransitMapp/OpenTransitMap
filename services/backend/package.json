@@ -6,7 +6,9 @@
     "build": "tsc -b",
     "start": "nodemon --verbose --watch src --watch ../../packages/types/src -e ts,js,mjs,cjs,json --exec node --import ./ts-node-register.mjs src/main.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:summary": "vitest run --coverage --coverage.reporter=text-summary --reporter=basic"
   },
   "dependencies": {
     "@open-transit-map/types": "workspace:*",
@@ -21,6 +23,7 @@
     "@types/node": "22.7.4",
     "@types/supertest": "2.0.16",
     "@types/swagger-ui-express": "4.1.6",
+    "@vitest/coverage-v8": "1.6.0",
     "nodemon": "3.1.7",
     "supertest": "7.0.0",
     "ts-node": "10.9.2",
