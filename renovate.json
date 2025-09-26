@@ -45,6 +45,7 @@
   "commitMessagePrefix": "",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
+  "prTitle": "{{semanticCommitType}}({{semanticCommitScope}}): [{{#if isMajor}}high-risk{{else}}{{#if isMinor}}med-risk{{else}}low-risk{{/if}}{{/if}}] update {{#if groupName}}{{groupName}}{{else}}{{depName}}{{/if}}{{#if newVersion}} to {{newVersion}}{{else}}{{#if newValue}} to {{newValue}}{{/if}}{{/if}}",
   "schedule": ["every weekday after 01:00 and before 06:00"],
   "packageRules": [
     {
