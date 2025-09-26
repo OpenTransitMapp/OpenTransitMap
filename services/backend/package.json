@@ -4,18 +4,27 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b",
-    "start": "nodemon --watch src --exec node --loader ts-node/esm src/main.ts",
-    "test": "echo backend tests TBD"
+    "start": "nodemon --verbose --watch src --watch ../../packages/types/src -e ts,js,mjs,cjs,json --exec node --import ./ts-node-register.mjs src/main.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@open-transit-map/types": "workspace:*",
     "express": "4.19.2",
-    "prom-client": "15.1.3"
+    "prom-client": "15.1.3",
+    "swagger-ui-express": "5.0.0",
+    "zod": "4.1.11",
+    "zod-openapi": "5.4.0"
   },
   "devDependencies": {
     "@types/express": "4.17.21",
     "@types/node": "22.7.4",
+    "@types/supertest": "2.0.16",
+    "@types/swagger-ui-express": "4.1.6",
     "nodemon": "3.1.7",
+    "supertest": "7.0.0",
     "ts-node": "10.9.2",
-    "typescript": "5.6.3"
+    "typescript": "5.6.3",
+    "vitest": "1.6.0"
   }
 }

@@ -74,7 +74,6 @@ Select all that apply and add details (commands, files, cases). Prefer Make targ
 - [ ] Linked issue(s) and/or ADR(s)
 - [ ] Updated docs (README/Architecture/ADRs) if behavior or contracts changed
 - [ ] Added/updated tests (cover happy paths, edge cases, and failures)
-- [ ] Ran `make ci` locally (constraints, lint, typecheck, build all green)
 - [ ] No secrets/PII added; configs documented
 - [ ] Observability updated (metrics/logging/tracing) where relevant
 - [ ] Backwards compatibility considered (or documented as breaking)
