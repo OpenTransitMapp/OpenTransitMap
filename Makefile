@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: help install start start-backend start-frontend lint typecheck build test coverage coverage-summary coverage-ci constraints ci format format-check renovate-validate up down
+.PHONY: help install start start-backend start-frontend lint typecheck build test coverage coverage-summary constraints ci format format-check renovate-validate up down
 
 # Always use Corepack to run Yarn (no global Yarn, no vendored yarnPath)
 YARN := corepack yarn
@@ -16,7 +16,7 @@ help:
 	@echo "  test         run workspace tests"
 	@echo "  coverage     run tests with coverage (all workspaces)"
 	@echo "  coverage-summary  print text coverage summary"
-	@echo "  coverage-ci  generate coverage + append summary (for CI)"
+ 
 	@echo "  constraints  enforce pinned dependency versions"
 	@echo "  ci           constraints + lint + typecheck + build"
 	@echo "  format       run Prettier on JSON/MD/YAML"
@@ -55,35 +55,7 @@ coverage:
 coverage-summary:
 	$(YARN) coverage:summary
 
-# CI helper: run coverage per workspace and append the summary to $GITHUB_STEP_SUMMARY
-# Also prints to stdout for local visibility. Keeps logic out of the workflow.
-coverage-ci:
-	@echo "Running coverage for backend..."
-	@$(YARN) workspace @open-transit-map/backend run test:coverage | tee /tmp/backend-cov-output.txt | sed -n '/All files/,$$p' > /tmp/backend-cov-summary.txt || true
-	@echo "Running coverage for types..."
-	@$(YARN) workspace @open-transit-map/types run test:coverage   | tee /tmp/types-cov-output.txt   | sed -n '/All files/,$$p' > /tmp/types-cov-summary.txt || true
-	@if [ -n "$$GITHUB_STEP_SUMMARY" ]; then \
-	  echo "## Coverage Summary" >> "$$GITHUB_STEP_SUMMARY"; \
-	  echo "" >> "$$GITHUB_STEP_SUMMARY"; \
-	  echo "### Backend (@open-transit-map/backend)" >> "$$GITHUB_STEP_SUMMARY"; \
-	  cat /tmp/backend-cov-summary.txt >> "$$GITHUB_STEP_SUMMARY"; \
-	  echo "" >> "$$GITHUB_STEP_SUMMARY"; \
-	  echo "### Types (@open-transit-map/types)" >> "$$GITHUB_STEP_SUMMARY"; \
-	  cat /tmp/types-cov-summary.txt >> "$$GITHUB_STEP_SUMMARY"; \
-	fi
-	@# Also emit a reusable Markdown summary for PR comments
-	@{ \
-		printf "<!-- coverage-summary: do not edit -->\n"; \
-		printf "## Coverage Summary\n\n"; \
-		printf "### Backend (@open-transit-map/backend)\n\n"; \
-		printf '```text\n'; \
-		cat /tmp/backend-cov-summary.txt; \
-		printf '\n```\n\n'; \
-		printf "### Types (@open-transit-map/types)\n\n"; \
-		printf '```text\n'; \
-		cat /tmp/types-cov-summary.txt; \
-		printf '\n```\n'; \
-	} > coverage-summary.md
+ 
 
 constraints:
 	$(YARN) constraints
