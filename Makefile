@@ -59,9 +59,9 @@ coverage-summary:
 # Also prints to stdout for local visibility. Keeps logic out of the workflow.
 coverage-ci:
 	@echo "Running coverage for backend..."
-	@$(YARN) workspace @open-transit-map/backend run test:coverage | tee /dev/stderr | sed -n '/All files/,$$p' > /tmp/backend-cov-summary.txt || true
+	@$(YARN) workspace @open-transit-map/backend run test:coverage | tee /tmp/backend-cov-output.txt | sed -n '/All files/,$$p' > /tmp/backend-cov-summary.txt || true
 	@echo "Running coverage for types..."
-	@$(YARN) workspace @open-transit-map/types run test:coverage   | tee /dev/stderr | sed -n '/All files/,$$p' > /tmp/types-cov-summary.txt || true
+	@$(YARN) workspace @open-transit-map/types run test:coverage   | tee /tmp/types-cov-output.txt   | sed -n '/All files/,$$p' > /tmp/types-cov-summary.txt || true
 	@if [ -n "$$GITHUB_STEP_SUMMARY" ]; then \
 	  echo "## Coverage Summary" >> "$$GITHUB_STEP_SUMMARY"; \
 	  echo "" >> "$$GITHUB_STEP_SUMMARY"; \
@@ -72,17 +72,17 @@ coverage-ci:
 	  cat /tmp/types-cov-summary.txt >> "$$GITHUB_STEP_SUMMARY"; \
 	fi
 	@# Also emit a reusable Markdown summary for PR comments
-	@{
-	  printf "<!-- coverage-summary: do not edit -->\n"; \
-	  printf "## Coverage Summary\n\n"; \
-	  printf "### Backend (@open-transit-map/backend)\n\n"; \
-	  printf '```text\n'; \
-	  cat /tmp/backend-cov-summary.txt; \
-	  printf '\n```\n\n'; \
-	  printf "### Types (@open-transit-map/types)\n\n"; \
-	  printf '```text\n'; \
-	  cat /tmp/types-cov-summary.txt; \
-	  printf '\n```\n'; \
+	@{ \
+		printf "<!-- coverage-summary: do not edit -->\n"; \
+		printf "## Coverage Summary\n\n"; \
+		printf "### Backend (@open-transit-map/backend)\n\n"; \
+		printf '```text\n'; \
+		cat /tmp/backend-cov-summary.txt; \
+		printf '\n```\n\n'; \
+		printf "### Types (@open-transit-map/types)\n\n"; \
+		printf '```text\n'; \
+		cat /tmp/types-cov-summary.txt; \
+		printf '\n```\n'; \
 	} > coverage-summary.md
 
 constraints:
