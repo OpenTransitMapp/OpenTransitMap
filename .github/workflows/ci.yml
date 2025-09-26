@@ -10,6 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # This "code-quality" job runs a series of fast, fail-fast checks to ensure the codebase meets baseline quality standards before running heavier jobs like build or test.
+  # It validates Renovate config, enforces dependency constraints, lints, typechecks, and checks formatting.
+  # The point is to catch common issues (bad dependencies, lint errors, type errors, formatting problems) early and fail the CI quickly if any are present.
   code-quality:
     name: Code Quality Checks
     permissions:
@@ -36,8 +39,13 @@ jobs:
       - name: Check Code Formatting
         run: make format-check
 
+  # This build-artifacts step ensures that the codebase can be built successfully after passing code quality checks.
+  # It verifies that all workspaces compile without errors, catching issues that lint/typecheck might miss (e.g., build-time errors, missing files).
+  # This step is important for CI pipelines that may later add deployment, packaging, or artifact upload steps.
   build-artifacts:
     name: Build Artifacts
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     needs: [code-quality]
     steps:
@@ -53,6 +61,14 @@ jobs:
       - name: Build All Workspaces
         run: make build
 
+  # This "test" job runs the project's tests and collects code coverage information.
+  # Its main purposes are:
+  #   - To ensure that all tests pass on CI, preventing regressions.
+  #   - To generate code coverage reports for both the backend and types packages.
+  #   - To upload coverage reports as workflow artifacts for later inspection.
+  #   - To post coverage summaries as comments on pull requests (using davelosert/vitest-coverage-report-action),
+  #     so reviewers can see how a PR affects test coverage.
+  # This step is essential for maintaining code quality, tracking test coverage, and providing feedback to contributors.
   test:
     name: Test
     runs-on: ubuntu-latest
