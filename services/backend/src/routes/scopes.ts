@@ -11,7 +11,14 @@ import { store } from '../store.js';
 
 const router = Router();
 
-// Parse, don't validate: turn untrusted input into a trusted domain object or throw.
+/**
+ * Parses and validates an incoming viewport request.
+ * Following the principle "Parse, don't validate", this function turns untrusted input into a trusted domain object.
+ * 
+ * @param body - Raw request body to be parsed
+ * @returns Validated ViewportRequest object
+ * @throws {BadRequestError} If the request body fails validation, with detailed error information
+ */
 function parseViewportRequest(body: unknown): ViewportRequest {
   const result = ViewportRequestSchema.safeParse(body);
   if (!result.success) {
@@ -20,6 +27,35 @@ function parseViewportRequest(body: unknown): ViewportRequest {
   return result.data;
 }
 
+/**
+ * POST /trains/scopes - Creates a new viewport scope for train tracking
+ * 
+ * This endpoint provisions a new viewport scope based on the provided bounding box.
+ * It performs several normalization steps to ensure consistent scope identifiers:
+ * 1. Validates the request body
+ * 2. Clamps coordinates to Web Mercator bounds
+ * 3. Quantizes the bounding box for stable keys
+ * 4. Computes a deterministic scope ID
+ * 5. Creates an initial empty frame
+ * 
+ * @route POST /trains/scopes
+ * @param {ViewportRequest} req.body - Viewport request with cityId and bbox
+ * @returns {ProvisionScopeResponse} 201 - New scope created with initial frame
+ * @throws {BadRequestError} 400 - Invalid request body
+ * 
+ * @example
+ * POST /trains/scopes
+ * {
+ *   "cityId": "nyc",
+ *   "bbox": {
+ *     "south": 40.70,
+ *     "west": -74.02,
+ *     "north": 40.78,
+ *     "east": -73.94,
+ *     "zoom": 12
+ *   }
+ * }
+ */
 router.post('/trains/scopes', (req, res, next) => {
   try {
     const parsed = parseViewportRequest(req.body);
@@ -57,6 +93,21 @@ router.post('/trains/scopes', (req, res, next) => {
   }
 });
 
+/**
+ * GET /trains - Retrieves the latest frame for a viewport scope
+ * 
+ * This endpoint returns the current state of all trains within a specific viewport scope.
+ * The scope must have been previously created via POST /trains/scopes.
+ * 
+ * @route GET /trains
+ * @param {string} req.query.scope - Scope identifier to fetch frame for
+ * @returns {GetScopedTrainsResponse} 200 - Latest frame for the requested scope
+ * @throws {BadRequestError} 400 - Missing or invalid scope parameter
+ * @throws {NotFoundError} 404 - Scope not found or expired
+ * 
+ * @example
+ * GET /trains?scope=v1|nyc|40.70|-74.02|40.78|-73.94
+ */
 router.get('/trains', (req, res, next) => {
   try {
     const scopeParam = req.query.scope;

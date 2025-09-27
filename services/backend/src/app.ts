@@ -4,7 +4,22 @@ import scopesRouter from './routes/scopes.js';
 import docsRouter from './routes/docs.js';
 import { errorHandler } from './errors.js';
 
-// Create and configure the Express application (no listening here).
+/**
+ * Main Express application instance for the OpenTransitMap backend.
+ * This module sets up middleware, routes, and error handling but does not start the server.
+ * 
+ * Features:
+ * - JSON request parsing
+ * - Prometheus metrics collection
+ * - Health check endpoint
+ * - OpenAPI documentation
+ * - Versioned API routes
+ * - Global error handling
+ * 
+ * @remarks
+ * The application is configured but not started here. Server startup happens in main.ts.
+ * This separation allows for easier testing and deployment flexibility.
+ */
 export const app = express();
 
 // JSON body parsing
