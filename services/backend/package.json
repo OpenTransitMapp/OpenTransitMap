@@ -14,7 +14,7 @@
     "@open-transit-map/types": "workspace:*",
     "express": "4.19.2",
     "prom-client": "15.1.3",
-    "swagger-ui-express": "5.0.0",
+    "swagger-ui-express": "5.0.1",
     "zod": "4.1.11",
     "zod-openapi": "5.4.0"
   },
