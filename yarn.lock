@@ -485,7 +485,7 @@ __metadata:
     typescript: "npm:5.6.3"
     vitest: "npm:1.6.0"
     zod: "npm:4.1.11"
-    zod-openapi: "npm:5.4.0"
+    zod-openapi: "npm:5.4.2"
   languageName: unknown
   linkType: soft
 
@@ -4510,6 +4510,15 @@ __metadata:
   peerDependencies:
     zod: ^3.25.74 || ^4.0.0
   checksum: 10c0/ef737a934aa553960f593823d8a8bd2a243155d27818b90333ad7acf0e7b580655ae539d4a38e1869674a38cd5c02301c2c99726df4a8388ecb3c80a35ec0710
+  languageName: node
+  linkType: hard
+
+"zod-openapi@npm:5.4.2":
+  version: 5.4.2
+  resolution: "zod-openapi@npm:5.4.2"
+  peerDependencies:
+    zod: ^3.25.74 || ^4.0.0
+  checksum: 10c0/c917675be7418c400805237fe6d405f37094034924f7dae8175cba769335e0675db280a165b13f3889092afd27856aa82ac9fa6d8779f0ac4b495a5b0f5f4c34
   languageName: node
   linkType: hard
 
