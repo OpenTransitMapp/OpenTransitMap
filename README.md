@@ -215,6 +215,30 @@ General expectations
 - Keep tests deterministic and independent from external networks/resources
 - Favor clarity and intent in tests over incidental implementation details
 
+## Development Standards
+
+We maintain high code quality through consistent standards for testing, documentation, and architecture:
+
+### Testing Standards
+- **Comprehensive Coverage**: Every new feature must include thorough tests covering happy paths, error cases, and edge conditions
+- **No Duplication**: Don't test the same behavior multiple times across different test files
+- **Test Isolation**: Each test should be independent and not rely on external state
+- **Clear Intent**: Tests should clearly express what behavior is being verified
+
+### Documentation Standards
+- **TSDoc Comments**: All public APIs and complex business logic must be documented with clear, concise TSDoc comments
+- **Examples**: Include practical usage examples in documentation
+- **Error Conditions**: Document what can go wrong and when
+- **Living Documentation**: Keep documentation in sync with code changes
+
+### Architecture Standards
+- **Dependency Injection**: Use constructor injection to make components testable and flexible
+- **Interface Segregation**: Create small, focused interfaces rather than large ones
+- **Single Responsibility**: Each component should have one clear purpose
+- **Configuration**: Use external configuration rather than hardcoded values
+
+For detailed guidelines, see [ADR 0007: Testing and Code Quality Standards](docs/ADRs/0007-testing-and-code-quality-standards.md).
+
 ## Test Coverage
 
 Generate coverage locally (all workspaces) and open the HTML report per package:
