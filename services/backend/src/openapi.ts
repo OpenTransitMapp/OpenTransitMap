@@ -1,5 +1,6 @@
 import { createDocument } from 'zod-openapi';
 import { z } from 'zod';
+import { logger } from './logger.js';
 import {
   ViewportRequestSchema,
   HealthzResponseSchema,
@@ -9,46 +10,22 @@ import {
   GetScopedTrainsResponseSchema,
 } from '@open-transit-map/types';
 
-export type ApiMajorVersion = 'v1';
-
 /**
- * Generates the OpenAPI documentation for the backend API.
- * This function builds a complete OpenAPI 3.1.0 specification from our Zod schemas.
+ * Creates the OpenAPI document for a given API major version.
  * 
- * @remarks
- * - Documentation is generated from Zod schemas and route contracts
- * - Supports versioned APIs (currently v1)
- * - Includes examples and descriptions from schema metadata
- * - Serves as the source of truth for API documentation
- * 
- * Features documented:
- * - Health check endpoint (/healthz)
- * - Prometheus metrics (/metrics)
- * - Viewport scope provisioning (/api/v1/trains/scopes)
- * - Train frame retrieval (/api/v1/trains)
- * 
- * @param version - API major version to generate docs for (defaults to 'v1')
+ * @param options - OpenAPI configuration options
  * @returns OpenAPI document object
- * 
- * @example
- * // Generate v1 API docs
- * const docs = getOpenApiDocument('v1');
- * 
- * @example
- * // Access via Swagger UI
- * // GET /docs -> redirects to /docs/v1
- * // GET /docs/v1 -> Swagger UI for v1 API
  */
-export function getOpenApiDocument(version: ApiMajorVersion = 'v1') {
-  const prefix = `/api/${version}`;
+export function createOpenApiDocument() {
+  const prefix = '/api/v1';
+  logger.debug('Generating OpenAPI document');
 
-  return createDocument({
+  const doc = createDocument({
     openapi: '3.1.0',
     info: {
       title: 'OpenTransitMap Backend API',
       version: '0.1.0',
-      description:
-        'Generated from Zod schemas and route contracts. This is the source of truth; avoid duplicating endpoint docs in README.',
+      description: 'Generated from Zod schemas and route contracts. This is the source of truth; avoid duplicating endpoint docs in README.',
     },
     servers: [{ url: '/' }],
     paths: {
@@ -82,7 +59,11 @@ export function getOpenApiDocument(version: ApiMajorVersion = 'v1') {
           },
           responses: {
             '201': {
-              description: 'Scope provisioned; returns scoped frame and scopeId',
+              description: 'Created new scope; returns scoped frame and scopeId',
+              content: { 'application/json': { schema: ProvisionScopeResponseSchema } },
+            },
+            '200': {
+              description: 'Scope already exists; returns existing scoped frame and scopeId',
               content: { 'application/json': { schema: ProvisionScopeResponseSchema } },
             },
             '400': {
@@ -118,4 +99,7 @@ export function getOpenApiDocument(version: ApiMajorVersion = 'v1') {
   }, {
     reused: 'ref',
   });
+
+  logger.debug('OpenAPI document generated');
+  return doc;
 }

@@ -110,9 +110,8 @@ Per‑package start/build scripts (examples):
 
 - The API surface is defined by an OpenAPI spec generated from our Zod schemas and route contracts. This spec is the source of truth.
 - When the backend is running locally:
-  - Spec JSON (latest): `GET /openapi.json`
-  - Spec JSON (versioned): `GET /openapi/v1.json`
-  - Swagger UI (version dropdown): `GET /docs`
+  - Spec JSON: `GET /openapi.json`
+  - Swagger UI: `GET /docs`
   - Health: `GET /healthz`
   - Metrics: `GET /metrics`
 
@@ -121,12 +120,6 @@ Default port is `8080` (override with `PORT`). Example:
 ```bash
 PORT=3000 corepack yarn workspace @open-transit-map/backend start
 ```
-
-### API Versioning
-
-- All endpoint paths are versioned under `/api/v1`. Breaking changes will be introduced under `/api/v2` while keeping `/api/v1` available during deprecation windows.
-- The docs are versioned too. The backend serves multiple OpenAPI documents and a single Swagger UI that can switch between them.
-  - Add new versions by updating `services/backend/src/openapi.ts` (extend `ApiMajorVersion` and reuse the `prefix = \`/api/${version}\``) and listing the version in `SUPPORTED_VERSIONS`inside`services/backend/src/routes/docs.ts`.
 
 ## Environment & Configuration
 

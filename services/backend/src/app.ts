@@ -1,47 +1,76 @@
 import express from 'express';
-import client from 'prom-client';
-import scopesRouter from './routes/scopes.js';
-import docsRouter from './routes/docs.js';
-import { errorHandler } from './errors.js';
+import { createScopesRouter } from './routes/scopes.js';
+import { createDocsRouter } from './routes/docs.js';
+import { createErrorHandler } from './errors.js';
+import { logger, httpLogger, metricsLogger } from './logger.js';
+import type { Metrics } from './metrics.js';
+import type { InMemoryStore } from './store.js';
+
+interface AppDeps {
+  metrics: Metrics;
+  store: InMemoryStore;
+}
 
 /**
- * Main Express application instance for the OpenTransitMap backend.
- * This module sets up middleware, routes, and error handling but does not start the server.
+ * Creates and configures the Express application instance.
+ * Uses dependency injection for configurable services (metrics, store).
  * 
- * Features:
- * - JSON request parsing
- * - Prometheus metrics collection
- * - Health check endpoint
- * - OpenAPI documentation
- * - Versioned API routes
- * - Global error handling
- * 
- * @remarks
- * The application is configured but not started here. Server startup happens in main.ts.
- * This separation allows for easier testing and deployment flexibility.
+ * @param deps - Core service dependencies (metrics, store)
+ * @returns Configured Express application
  */
-export const app = express();
+export function createApp(deps: AppDeps) {
+  const app = express();
 
-// JSON body parsing
-app.use(express.json());
+  // Request logging (must be first to capture all requests)
+  app.use(httpLogger);
 
-// Metrics
-client.collectDefaultMetrics();
+  // JSON body parsing (explicit limit)
+  app.use(express.json({ limit: '100kb' }));
 
-app.get('/healthz', (_req, res) => {
-  res.json({ ok: true, service: 'backend', time: new Date().toISOString() });
-});
+  // HTTP timing metrics
+  app.use((req, res, next) => {
+    const start = process.hrtime.bigint();
+    res.on('finish', () => {
+      try {
+        const end = process.hrtime.bigint();
+        const duration = Number(end - start) / 1e9; // seconds
+        const route = (req as any).route?.path || req.path || req.url;
+        deps.metrics.observeHttpRequest(req.method, route, res.statusCode, duration);
+      } catch {
+        // best-effort metrics; ignore failures
+      }
+    });
+    next();
+  });
 
-app.get('/metrics', async (_req, res) => {
-  res.set('Content-Type', client.register.contentType);
-  res.end(await client.register.metrics());
-});
+  app.get('/healthz', (_req, res) => {
+    const time = new Date().toISOString();
+    logger.info({ time }, 'Health check');
+    res.json({ ok: true, service: 'backend', time });
+  });
 
-// API routes (versioned)
-app.use('/api/v1', scopesRouter);
+  app.get('/metrics', async (_req, res) => {
+    metricsLogger.info('Metrics requested');
+    res.set('Content-Type', 'text/plain');
+    res.end(await deps.metrics.getMetrics());
+  });
 
-// API documentation (OpenAPI) – generated from Zod/route contracts
-app.use(docsRouter);
+  // API routes (versioned)
+  app.use('/api/v1', createScopesRouter({ 
+    store: deps.store 
+  }));
 
-// Errors
-app.use(errorHandler);
+  // API documentation (OpenAPI) – generated from Zod/route contracts
+  app.use(createDocsRouter());
+
+  // Errors
+  app.use(createErrorHandler());
+
+  return app;
+}
+
+// Import core services for the default instance
+import { metrics, store } from './services.js';
+
+// Create default app instance with production services
+export const app = createApp({ metrics, store });

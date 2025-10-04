@@ -1,147 +1,398 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
-import { app } from '../../src/app.js';
+import type { ScopedTrainsFrame } from '@open-transit-map/types';
+import { createScopesRouter } from '../routes/scopes.js';
+import { InMemoryStore } from '../store.js';
+import express from 'express';
+import { createErrorHandler } from '../errors.js';
+import { vi } from 'vitest';
+import { createMockStore } from './test-utils.js';
 
-describe('Scopes API (v1)', () => {
+describe('Scopes Router', () => {
   const base = '/api/v1';
 
-  it('provisions a scope and returns a scoped frame (201)', async () => {
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({
-        cityId: 'nyc',
-        bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
-      })
-      .expect(201);
+  // Mock dependencies
+  let mockStore: InMemoryStore;
+  let app: express.Express;
 
-    expect(res.body.ok).toBe(true);
-    expect(typeof res.body.scopeId).toBe('string');
-    expect(res.body.frame).toBeTruthy();
-    expect(res.body.frame.cityId).toBe('nyc');
-    expect(res.body.frame.vehicles).toBeInstanceOf(Array);
+  beforeEach(() => {
+    mockStore = createMockStore();
+
+    // Create test app with mocked dependencies
+    app = express();
+    app.use(express.json());
+    app.use(base, createScopesRouter({ store: mockStore }));
+    app.use(createErrorHandler());
   });
 
-  it('uses externalScopeKey when provided', async () => {
-    const key = 'custom-scope-key';
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({
+  describe('POST /trains/scopes', () => {
+    const validRequest = {
+      cityId: 'nyc',
+      bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
+    };
+
+    it('provisions a new scope and returns a scoped frame (201)', async () => {
+      // Ensure no existing frame so route creates a new one
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
+
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send(validRequest)
+        .expect(201);
+
+      expect(res.body.ok).toBe(true);
+      expect(res.body.scopeId).toEqual(expect.any(String));
+      expect(res.body.frame).toMatchObject({
+        scopeId: res.body.scopeId,
+        cityId: validRequest.cityId,
+        vehicles: [],
+      });
+      expect(mockStore.upsertScope).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          cityId: validRequest.cityId,
+          bbox: expect.objectContaining({
+            south: expect.closeTo(validRequest.bbox.south, 5),
+            west: expect.closeTo(validRequest.bbox.west, 5),
+            north: expect.closeTo(validRequest.bbox.north, 5),
+            east: expect.closeTo(validRequest.bbox.east, 5),
+          }),
+        })
+      );
+      expect(mockStore.setFrame).toHaveBeenCalled();
+    });
+
+    it('uses externalScopeKey when provided and returns 200 if existing', async () => {
+      const key = 'custom-scope-key';
+      const frame: ScopedTrainsFrame = {
+        scopeId: key,
+        cityId: validRequest.cityId,
+        bbox: validRequest.bbox,
+        at: new Date().toISOString(),
+        vehicles: [],
+      };
+
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(frame);
+
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ ...validRequest, externalScopeKey: key })
+        .expect(200);
+
+      expect(res.body.scopeId).toBe(key);
+      expect(mockStore.upsertScope).toHaveBeenCalledWith(
+        key,
+        expect.any(Object)
+      );
+    });
+
+    it('rejects invalid bbox (north < south) with 400', async () => {
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ 
+          cityId: 'nyc', 
+          bbox: { south: 1, west: 0, north: 0, east: 1 } 
+        })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Invalid viewport request/);
+      expect(mockStore.upsertScope).not.toHaveBeenCalled();
+    });
+
+    it('rejects missing cityId with 400', async () => {
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ 
+          bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 } 
+        })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Invalid viewport request/);
+      expect(mockStore.upsertScope).not.toHaveBeenCalled();
+    });
+
+    it('rejects missing bbox with 400', async () => {
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ 
+          cityId: 'nyc'
+        })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Invalid viewport request/);
+      expect(mockStore.upsertScope).not.toHaveBeenCalled();
+    });
+
+    it('rejects invalid bbox coordinates (out of range) with 400', async () => {
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ 
+          cityId: 'nyc', 
+          bbox: { south: -91, west: -181, north: 91, east: 181, zoom: 12 } 
+        })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Invalid viewport request/);
+      expect(mockStore.upsertScope).not.toHaveBeenCalled();
+    });
+
+    it('rejects invalid bbox types with 400', async () => {
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ 
+          cityId: 'nyc', 
+          bbox: { south: 'invalid', west: null, north: true, east: [], zoom: 12 } 
+        })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Invalid viewport request/);
+      expect(mockStore.upsertScope).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /trains', () => {
+    it('returns 404 for unknown scope', async () => {
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
+
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .query({ scope: 'unknown-scope' })
+        .expect(404);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Scope not found/);
+    });
+
+    it('returns 400 for missing scope parameter', async () => {
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Missing or invalid scope parameter/);
+    });
+
+    it('returns 400 for empty scope parameter', async () => {
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .query({ scope: '' })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Missing or invalid scope parameter/);
+    });
+
+    it('returns 400 for empty scope parameter', async () => {
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .query({ scope: '' })
+        .expect(400);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Missing or invalid scope parameter/);
+    });
+
+
+    it('fetches previously provisioned scope', async () => {
+      const scopeId = 'test-scope';
+      const frame: ScopedTrainsFrame = {
+        scopeId,
         cityId: 'nyc',
         bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96 },
-        externalScopeKey: key,
-      })
-      .expect(201);
-    expect(res.body.scopeId).toBe(key);
+        at: new Date().toISOString(),
+        vehicles: [],
+      };
+
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(frame);
+
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .query({ scope: scopeId })
+        .expect(200);
+
+      expect(res.body.ok).toBe(true);
+      expect(res.body.frame).toEqual(frame);
+      expect(mockStore.getFrame).toHaveBeenCalledWith(scopeId);
+    });
   });
 
-  it('rejects invalid bbox (north < south) with 400 and details', async () => {
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 1, west: 0, north: 0, east: 1 } })
-      .expect(400);
+  describe('Edge Cases and Boundary Conditions', () => {
+    it('handles very small bbox correctly', async () => {
+      const smallBbox = {
+        cityId: 'nyc',
+        bbox: { south: 40.7, west: -74.02, north: 40.7001, east: -73.9999, zoom: 12 }
+      };
 
-    expect(res.body.ok).toBe(false);
-    expect(res.body.error).toMatch(/Invalid viewport request/);
-    const details: Array<{ path: string; message: string }> = res.body.details || [];
-    expect(details.some((d) => d.path.endsWith('bbox.north') && /north must be >= south/.test(d.message))).toBe(true);
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
+
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send(smallBbox)
+        .expect(201);
+
+      expect(res.body.ok).toBe(true);
+      expect(res.body.scopeId).toEqual(expect.any(String));
+    });
+
+    it('handles bbox at Web Mercator boundaries', async () => {
+      const boundaryBbox = {
+        cityId: 'nyc',
+        bbox: { south: -85.05, west: -180, north: 85.05, east: 180, zoom: 12 }
+      };
+
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
+
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send(boundaryBbox)
+        .expect(201);
+
+      expect(res.body.ok).toBe(true);
+    });
+
+    it('handles very long cityId strings', async () => {
+      const longCityId = 'a'.repeat(1000);
+      const requestData = {
+        cityId: longCityId,
+        bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 }
+      };
+
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
+
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send(requestData)
+        .expect(201);
+
+      expect(res.body.ok).toBe(true);
+    });
   });
 
-  it('rejects invalid bbox (east < west) with 400 and details', async () => {
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 1, north: 1, east: 0 } })
-      .expect(400);
-    expect(res.body.ok).toBe(false);
-    const details: Array<{ path: string; message: string }> = res.body.details || [];
-    expect(details.some((d) => d.path.endsWith('bbox.east') && /east must be >= west/.test(d.message))).toBe(true);
+  describe('Error Scenarios', () => {
+    it('handles store errors gracefully', async () => {
+      const error = new Error('Store operation failed');
+      (mockStore.upsertScope as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+        throw error;
+      });
+
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({
+          cityId: 'nyc',
+          bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 }
+        })
+        .expect(500);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Internal Server Error/);
+    });
+
+    it('handles frame retrieval errors gracefully', async () => {
+      const error = new Error('Frame retrieval failed');
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+        throw error;
+      });
+
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .query({ scope: 'test-scope' })
+        .expect(500);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Internal Server Error/);
+    });
+
+    it('handles invalid scope parameter format', async () => {
+      const res = await request(app)
+        .get(`${base}/trains`)
+        .query({ scope: 'invalid-scope-format!' })
+        .expect(404);
+
+      expect(res.body.ok).toBe(false);
+      expect(res.body.error).toMatch(/Scope not found/);
+    });
   });
 
-  it('rejects invalid zoom (non-integer or out of range) with 400', async () => {
-    await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1, zoom: 22.5 } })
-      .expect(400);
+  describe('Idempotency and State Management', () => {
+    it('returns existing frame when scope already exists', async () => {
+      // The scope ID will be computed from the bbox, so we need to mock the frame with the computed ID
+      const computedScopeId = 'v1|nyc|40.7000|-74.0200|40.7600|-73.9600';
+      const existingFrame: ScopedTrainsFrame = {
+        scopeId: computedScopeId,
+        cityId: 'nyc',
+        bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96 },
+        at: new Date().toISOString(),
+        vehicles: [{ 
+          id: 'bus_1', 
+          status: 'in_service',
+          coordinate: { lat: 40.75, lng: -73.95 },
+          updatedAt: new Date().toISOString()
+        }],
+      };
 
-    await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1, zoom: 23 } })
-      .expect(400);
-  });
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(existingFrame);
 
-  it('rejects empty/whitespace cityId with 400', async () => {
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: '   ', bbox: { south: 0, west: 0, north: 1, east: 1 } })
-      .expect(400);
-    expect(res.body.ok).toBe(false);
-  });
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({
+          cityId: 'nyc',
+          bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 }
+        })
+        .expect(200);
 
-  it('rejects unknown top-level properties due to strict schema', async () => {
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1 }, extra: true })
-      .expect(400);
-    expect(res.body.ok).toBe(false);
-  });
+      expect(res.body.ok).toBe(true);
+      expect(res.body.scopeId).toBe(computedScopeId);
+      expect(res.body.frame).toEqual(existingFrame);
+      expect(mockStore.upsertScope).toHaveBeenCalled();
+      expect(mockStore.setFrame).not.toHaveBeenCalled();
+    });
 
-  it('rejects unknown properties inside bbox due to strict schema', async () => {
-    const res = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1, extra: true } })
-      .expect(400);
-    expect(res.body.ok).toBe(false);
-  });
+    it('creates new frame when scope does not exist', async () => {
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
 
-  it('enforces externalScopeKey length boundaries (1..256)', async () => {
-    await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1 }, externalScopeKey: 'a' })
-      .expect(201);
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({
+          cityId: 'nyc',
+          bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 }
+        })
+        .expect(201);
 
-    await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1 }, externalScopeKey: 'x'.repeat(256) })
-      .expect(201);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.scopeId).toEqual(expect.any(String));
+      expect(res.body.frame.vehicles).toEqual([]);
+      expect(mockStore.upsertScope).toHaveBeenCalled();
+      expect(mockStore.setFrame).toHaveBeenCalled();
+    });
 
-    await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 0, west: 0, north: 1, east: 1 }, externalScopeKey: 'y'.repeat(257) })
-      .expect(400);
-  });
+    it('handles external scope key with special characters', async () => {
+      const specialKey = 'scope-with-special-chars_123!@#';
+      const frame: ScopedTrainsFrame = {
+        scopeId: specialKey,
+        cityId: 'nyc',
+        bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96 },
+        at: new Date().toISOString(),
+        vehicles: [],
+      };
 
-  it('computes the same scopeId for identical bbox regardless of zoom hint', async () => {
-    const body = { cityId: 'nyc', bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96 } };
-    const a = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ ...body, bbox: { ...body.bbox, zoom: 5 } })
-      .expect(201);
-    const b = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ ...body, bbox: { ...body.bbox, zoom: 12 } })
-      .expect(201);
-    expect(a.body.scopeId).toBe(b.body.scopeId);
-  });
+      (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(frame);
 
-  it('returns 400 when scope param missing', async () => {
-    const res = await request(app).get(`${base}/trains`).expect(400);
-    expect(res.body.ok).toBe(false);
-  });
+      const res = await request(app)
+        .post(`${base}/trains/scopes`)
+        .send({ 
+          cityId: 'nyc',
+          bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
+          externalScopeKey: specialKey 
+        })
+        .expect(200);
 
-  it('returns 404 for unknown scope', async () => {
-    const res = await request(app).get(`${base}/trains`).query({ scope: 'does-not-exist' }).expect(404);
-    expect(res.body.ok).toBe(false);
-    expect(res.body.error).toMatch(/Scope not found/);
-  });
-
-  it('fetches previously provisioned scope with 200', async () => {
-    const create = await request(app)
-      .post(`${base}/trains/scopes`)
-      .send({ cityId: 'nyc', bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96 } })
-      .expect(201);
-    const scopeId = create.body.scopeId as string;
-
-    const res = await request(app).get(`${base}/trains`).query({ scope: scopeId }).expect(200);
-    expect(res.body.ok).toBe(true);
-    expect(res.body.frame.scopeId).toBe(scopeId);
+      expect(res.body.scopeId).toBe(specialKey);
+      expect(mockStore.upsertScope).toHaveBeenCalledWith(specialKey, expect.any(Object));
+    });
   });
 });

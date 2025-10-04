@@ -1,52 +1,123 @@
-import { describe, it, expect } from 'vitest';
-import type { ScopeDefinition, ScopedTrainsFrame, ScopeId } from '@open-transit-map/types';
-import { store } from '../../src/store.js';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { InMemoryStore } from '../store.js';
+import type { ScopeDefinition, ScopedTrainsFrame } from '@open-transit-map/types';
+import { createMockMetrics } from './test-utils.js';
+import { Metrics } from '../metrics.js';
 
-const sid = (s: string) => s as unknown as ScopeId;
+describe('InMemoryStore', () => {
+  // Test data
+  const testScope: ScopeDefinition = {
+    id: 'test-scope',
+    cityId: 'nyc',
+    bbox: { south: 40.7, west: -74, north: 40.8, east: -73.9 },
+    createdAt: new Date().toISOString(),
+  };
 
-describe('InMemoryStore TTL behavior', () => {
-  it('getScope returns value before TTL and undefined after expiry', async () => {
-    const id = sid('scope-ttl-test');
-    const def: ScopeDefinition = {
-      id,
-      cityId: 'nyc',
-      bbox: { south: 0, west: 0, north: 1, east: 1 },
-      createdAt: new Date().toISOString(),
-    };
+  const testFrame: ScopedTrainsFrame = {
+    scopeId: testScope.id,
+    cityId: testScope.cityId,
+    bbox: testScope.bbox,
+    at: new Date().toISOString(),
+    vehicles: [
+      { 
+        id: 'bus_1', 
+        status: 'in_service', 
+        coordinate: { lat: 40.75, lng: -73.95 },
+        updatedAt: new Date().toISOString()
+      }
+    ],
+  };
 
-    // Not expired
-    store.upsertScope(id, def, 50);
-    expect(store.getScope(id)).toEqual(def);
+  let mockMetrics: Metrics;
+  let store: InMemoryStore;
+  const defaultTtlMs = 1000;
+  const pastTtlMs = defaultTtlMs + 100;
 
-    // Expire quickly
-    store.upsertScope(id, def, 1);
-    await new Promise((r) => setTimeout(r, 5));
-    expect(store.getScope(id)).toBeUndefined();
+  beforeEach(() => {
+    // Reset mocks before each test
+    vi.useFakeTimers();
+    mockMetrics = createMockMetrics();
+
+    store = new InMemoryStore({ 
+      metrics: mockMetrics,
+      defaultTtlMs: defaultTtlMs
+    });
   });
 
-  it('getFrame returns value before TTL and undefined after expiry', async () => {
-    const id = sid('frame-ttl-test');
-    const frame: ScopedTrainsFrame = {
-      scopeId: id,
-      cityId: 'nyc',
-      bbox: { south: 0, west: 0, north: 1, east: 1 },
-      at: new Date().toISOString(),
-      checksum: undefined,
-      vehicles: [],
-    };
-
-    // Not expired
-    store.setFrame(id, frame, 50);
-    expect(store.getFrame(id)).toEqual(frame);
-
-    // Expire quickly
-    store.setFrame(id, frame, 1);
-    await new Promise((r) => setTimeout(r, 5));
-    expect(store.getFrame(id)).toBeUndefined();
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('returns undefined for unknown ids (no entry)', () => {
-    expect(store.getScope(sid('does-not-exist'))).toBeUndefined();
-    expect(store.getFrame(sid('does-not-exist'))).toBeUndefined();
+  describe('Scope Management', () => {
+    it('stores and retrieves scopes', () => {
+      store.upsertScope(testScope.id, testScope);
+      const retrieved = store.getScope(testScope.id);
+      expect(retrieved).toEqual(testScope);
+    });
+
+    it('expires scopes after TTL', () => {
+      store.upsertScope(testScope.id, testScope);
+      vi.advanceTimersByTime(pastTtlMs); // Past TTL
+      const retrieved = store.getScope(testScope.id);
+      expect(retrieved).toBeUndefined();
+    });
+
+    it('records metrics on scope creation', () => {
+      store.upsertScope(testScope.id, testScope);
+      expect(mockMetrics.recordScopeCreation).toHaveBeenCalledWith(testScope.cityId);
+    });
+  });
+
+  describe('Frame Management', () => {
+    it('stores and retrieves frames', () => {
+      store.setFrame(testFrame.scopeId, testFrame);
+      const retrieved = store.getFrame(testFrame.scopeId);
+      expect(retrieved).toEqual(testFrame);
+    });
+
+    it('expires frames after TTL', () => {
+      store.setFrame(testFrame.scopeId, testFrame);
+      vi.advanceTimersByTime(pastTtlMs); // Past TTL
+      const retrieved = store.getFrame(testFrame.scopeId);
+      expect(retrieved).toBeUndefined();
+    });
+
+    it('records frame update metrics', () => {
+      store.setFrame(testFrame.scopeId, testFrame);
+      expect(mockMetrics.observeFrameUpdate).toHaveBeenCalledWith(
+        testFrame.cityId,
+        expect.any(Number)
+      );
+    });
+  });
+
+  describe('Metrics Collection', () => {
+    it('updates active scope counts on upsert', () => {
+      store.upsertScope(testScope.id, testScope);
+      expect(mockMetrics.setActiveScopes).toHaveBeenCalledWith(
+        testScope.cityId,
+        1
+      );
+    });
+
+    it('updates active vehicle counts on frame set', () => {
+      store.upsertScope(testScope.id, testScope);
+      store.setFrame(testFrame.scopeId, testFrame);
+      expect(mockMetrics.setActiveVehicles).toHaveBeenCalledWith(
+        testFrame.cityId,
+        'in_service',
+        1
+      );
+    });
+
+    it('metrics skips expired scopes', () => {
+      store.upsertScope(testScope.id, testScope);
+      vi.advanceTimersByTime(pastTtlMs); // Past TTL
+      store.getScope(testScope.id); // This will trigger expiration
+      expect(mockMetrics.setActiveScopes).not.toHaveBeenCalledWith(
+        testScope.cityId,
+        0
+      );
+    });
   });
 });
