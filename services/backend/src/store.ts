@@ -226,6 +226,34 @@ class InMemoryStore {
     
     return frame;
   }
+
+  /**
+   * Iterates all active (non‑expired) scopes.
+   *
+   * Invokes the callback once per scope with its normalized definition. This is
+   * primarily intended for the processing pipeline to compute scoped frames from
+   * the current city‑wide state. Expired scopes are skipped; no ordering is
+   * guaranteed.
+   *
+   * @param fn - Callback to invoke with each active scope definition
+   *
+   * @example
+   * store.forEachActiveScope((scope) => {
+   *   console.log(scope.id, scope.cityId);
+   * });
+   */
+  forEachActiveScope(fn: (scope: ScopeDefinition) => void) {
+    for (const [id, entry] of this.scopes) {
+      if (entry.ttl < Date.now()) continue;
+      const { ttl, ...rest } = entry;
+      const scope = rest as ScopeDefinition;
+      // Ensure the id is correct on the returned object
+      if (scope.id !== id) {
+        scope.id = id;
+      }
+      fn(scope);
+    }
+  }
 }
 
 // Export the class only - instances should be created with DI

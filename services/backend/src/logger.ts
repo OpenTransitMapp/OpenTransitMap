@@ -136,9 +136,28 @@ export function createStoreLogger(logger: pino.Logger) {
   });
 }
 
+/**
+ * Creates a specialized pipeline logger for ingest/processor/broadcaster.
+ */
+export function createPipelineLogger(logger: pino.Logger) {
+  return logger.child({
+    component: 'pipeline',
+    level: 'info',
+  });
+}
+
 // Default logger instances for the application
 export const logger = createLogger();
 export const httpLogger = createHttpLogger(logger);
 export const errorLogger = createErrorLogger(logger);
 export const metricsLogger = createMetricsLogger(logger);
 export const storeLogger = createStoreLogger(logger);
+export const pipelineLogger = createPipelineLogger(logger);
+
+/**
+ * Pre-instantiated sub-loggers for pipeline components to centralize
+ * logger creation in one module.
+ */
+export const pipelineEventBusLogger = pipelineLogger.child({ subcomponent: 'eventbus', impl: 'memory' });
+export const pipelineProcessorLogger = pipelineLogger.child({ subcomponent: 'processor' });
+export const pipelineFeederLogger = pipelineLogger.child({ subcomponent: 'feeder' });
