@@ -7,7 +7,7 @@ build/
 
 # Yarn Berry (v4) artifacts to ignore by default
 .yarn/*
-	.yarn/install-state.gz
+.yarn/install-state.gz
 
 # Test coverage outputs (do not commit)
 coverage/
@@ -24,5 +24,3 @@ lcov.info
 # TypeScript incremental build info
 *.tsbuildinfo
 **/*.tsbuildinfo
-
-.yarn/install-state.gz

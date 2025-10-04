@@ -1,5 +1,6 @@
 import { createDocument } from 'zod-openapi';
 import { z } from 'zod';
+import { logger } from './logger.js';
 import {
   ViewportRequestSchema,
   HealthzResponseSchema,
@@ -9,22 +10,22 @@ import {
   GetScopedTrainsResponseSchema,
 } from '@open-transit-map/types';
 
-export type ApiMajorVersion = 'v1';
-
 /**
- * Build the OpenAPI document for a given API major version.
- * Add new cases as we introduce new versions.
+ * Creates the OpenAPI document for a given API major version.
+ * 
+ * @param options - OpenAPI configuration options
+ * @returns OpenAPI document object
  */
-export function getOpenApiDocument(version: ApiMajorVersion = 'v1') {
-  const prefix = `/api/${version}`;
+export function createOpenApiDocument() {
+  const prefix = '/api/v1';
+  logger.debug('Generating OpenAPI document');
 
-  return createDocument({
+  const doc = createDocument({
     openapi: '3.1.0',
     info: {
       title: 'OpenTransitMap Backend API',
       version: '0.1.0',
-      description:
-        'Generated from Zod schemas and route contracts. This is the source of truth; avoid duplicating endpoint docs in README.',
+      description: 'Generated from Zod schemas and route contracts. This is the source of truth; avoid duplicating endpoint docs in README.',
     },
     servers: [{ url: '/' }],
     paths: {
@@ -58,7 +59,11 @@ export function getOpenApiDocument(version: ApiMajorVersion = 'v1') {
           },
           responses: {
             '201': {
-              description: 'Scope provisioned; returns scoped frame and scopeId',
+              description: 'Created new scope; returns scoped frame and scopeId',
+              content: { 'application/json': { schema: ProvisionScopeResponseSchema } },
+            },
+            '200': {
+              description: 'Scope already exists; returns existing scoped frame and scopeId',
               content: { 'application/json': { schema: ProvisionScopeResponseSchema } },
             },
             '400': {
@@ -94,4 +99,7 @@ export function getOpenApiDocument(version: ApiMajorVersion = 'v1') {
   }, {
     reused: 'ref',
   });
+
+  logger.debug('OpenAPI document generated');
+  return doc;
 }

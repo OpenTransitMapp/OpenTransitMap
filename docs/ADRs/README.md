@@ -35,6 +35,16 @@ Style for junior readers
 - One decision per ADR. If scope grows, split into multiple ADRs.
 - Keep the ADR focused on why and how (not full specs). Link to specs or tickets as needed.
 
+## Current ADRs
+
+- [0001: Record Architecture Decisions](0001-record-architecture-decisions.md) - Process for creating and maintaining ADRs
+- [0002: Ingest Pipeline with Valkey Streams](0002-ingest-pipeline-valkey-streams.md) - Real-time data ingestion architecture
+- [0003: Shared Schemas with TypeScript and Zod](0003-shared-schemas-typescript-zod.md) - Type-safe schema validation
+- [0004: Viewport Scope Provisioning](0004-viewport-scope-provisioning.md) - Geographic scope management
+- [0005: Edge Security with Envoy and OPA](0005-edge-security-envoy-opa.md) - Security and authorization
+- [0006: Observability with OpenTelemetry Collector](0006-observability-otel-collector.md) - Monitoring and tracing
+- [0007: Testing and Code Quality Standards](0007-testing-and-code-quality-standards.md) - Development standards for testing, documentation, and architecture
+
 ## Template
 
 - See `docs/ADRs/0000-adr-template.md` for detailed section guidance.

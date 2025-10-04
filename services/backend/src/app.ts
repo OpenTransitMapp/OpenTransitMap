@@ -1,32 +1,76 @@
 import express from 'express';
-import client from 'prom-client';
-import scopesRouter from './routes/scopes.js';
-import docsRouter from './routes/docs.js';
-import { errorHandler } from './errors.js';
+import { createScopesRouter } from './routes/scopes.js';
+import { createDocsRouter } from './routes/docs.js';
+import { createErrorHandler } from './errors.js';
+import { logger, httpLogger, metricsLogger } from './logger.js';
+import type { Metrics } from './metrics.js';
+import type { InMemoryStore } from './store.js';
 
-// Create and configure the Express application (no listening here).
-export const app = express();
+interface AppDeps {
+  metrics: Metrics;
+  store: InMemoryStore;
+}
 
-// JSON body parsing
-app.use(express.json());
+/**
+ * Creates and configures the Express application instance.
+ * Uses dependency injection for configurable services (metrics, store).
+ * 
+ * @param deps - Core service dependencies (metrics, store)
+ * @returns Configured Express application
+ */
+export function createApp(deps: AppDeps) {
+  const app = express();
 
-// Metrics
-client.collectDefaultMetrics();
+  // Request logging (must be first to capture all requests)
+  app.use(httpLogger);
 
-app.get('/healthz', (_req, res) => {
-  res.json({ ok: true, service: 'backend', time: new Date().toISOString() });
-});
+  // JSON body parsing (explicit limit)
+  app.use(express.json({ limit: '100kb' }));
 
-app.get('/metrics', async (_req, res) => {
-  res.set('Content-Type', client.register.contentType);
-  res.end(await client.register.metrics());
-});
+  // HTTP timing metrics
+  app.use((req, res, next) => {
+    const start = process.hrtime.bigint();
+    res.on('finish', () => {
+      try {
+        const end = process.hrtime.bigint();
+        const duration = Number(end - start) / 1e9; // seconds
+        const route = (req as any).route?.path || req.path || req.url;
+        deps.metrics.observeHttpRequest(req.method, route, res.statusCode, duration);
+      } catch {
+        // best-effort metrics; ignore failures
+      }
+    });
+    next();
+  });
 
-// API routes (versioned)
-app.use('/api/v1', scopesRouter);
+  app.get('/healthz', (_req, res) => {
+    const time = new Date().toISOString();
+    logger.info({ time }, 'Health check');
+    res.json({ ok: true, service: 'backend', time });
+  });
 
-// API documentation (OpenAPI) – generated from Zod/route contracts
-app.use(docsRouter);
+  app.get('/metrics', async (_req, res) => {
+    metricsLogger.info('Metrics requested');
+    res.set('Content-Type', 'text/plain');
+    res.end(await deps.metrics.getMetrics());
+  });
 
-// Errors
-app.use(errorHandler);
+  // API routes (versioned)
+  app.use('/api/v1', createScopesRouter({ 
+    store: deps.store 
+  }));
+
+  // API documentation (OpenAPI) – generated from Zod/route contracts
+  app.use(createDocsRouter());
+
+  // Errors
+  app.use(createErrorHandler());
+
+  return app;
+}
+
+// Import core services for the default instance
+import { metrics, store } from './services.js';
+
+// Create default app instance with production services
+export const app = createApp({ metrics, store });

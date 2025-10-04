@@ -1,48 +1,67 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { app } from '../../src/app.js';
+import { createApp } from '../app.js';
+import { createMockMetrics, createMockStore } from './test-utils.js';
 
-describe('App endpoints', () => {
-  it('GET /healthz returns ok payload', async () => {
-    const res = await request(app).get('/healthz').expect(200);
-    expect(res.body.ok).toBe(true);
-    expect(res.body.service).toBe('backend');
-    expect(typeof res.body.time).toBe('string');
-    // basic ISO timestamp sanity check
-    expect(() => new Date(res.body.time)).not.toThrow();
+describe('App Integration', () => {
+  // Create test app instance with mocked dependencies
+  const app = createApp({
+    metrics: createMockMetrics(),
+    store: createMockStore(),
   });
 
-  it('GET /metrics exposes Prometheus metrics', async () => {
-    const res = await request(app).get('/metrics').expect(200);
-    expect(res.headers['content-type']).toContain('text/plain');
-    // v8 coverage env may vary, just ensure it looks like Prometheus exposition
-    expect(res.text).toContain('#');
-  });
-});
-
-describe('OpenAPI + Docs routes', () => {
-  it('GET /openapi.json (latest) returns a valid document', async () => {
-    const res = await request(app).get('/openapi.json').expect(200);
-    expect(res.body.openapi).toBeDefined();
-    expect(res.body.paths).toBeDefined();
+  describe('Health Check', () => {
+    it('GET /healthz returns ok payload', async () => {
+      const res = await request(app).get('/healthz').expect(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.service).toBe('backend');
+      expect(typeof res.body.time).toBe('string');
+      // basic ISO timestamp sanity check
+      expect(() => new Date(res.body.time)).not.toThrow();
+    });
   });
 
-  it('GET /openapi/v1.json returns a valid document', async () => {
-    const res = await request(app).get('/openapi/v1.json').expect(200);
-    expect(res.body.openapi).toBeDefined();
-    expect(res.body.paths).toBeDefined();
+  describe('Metrics Endpoint', () => {
+    it('GET /metrics exposes Prometheus metrics', async () => {
+      const res = await request(app).get('/metrics').expect(200);
+      expect(res.headers['content-type']).toContain('text/plain');
+      expect(res.text).toContain('test_metric');
+    });
   });
 
-  it('GET /openapi/v2.json returns 404 for unknown version', async () => {
-    const res = await request(app).get('/openapi/v2.json').expect(404);
-    expect(res.body.ok).toBe(false);
-    expect(String(res.body.error || '')).toMatch(/Unknown API version/i);
+  describe('OpenAPI Documentation', () => {
+    it('GET /docs serves Swagger UI', async () => {
+      const res = await request(app).get('/docs/').expect(200);
+      expect(res.headers['content-type']).toContain('text/html');
+      expect(res.text).toContain('swagger-ui');
+    });
+
+    it('GET /openapi.json returns valid OpenAPI spec', async () => {
+      const res = await request(app).get('/openapi.json').expect(200);
+      expect(res.body.openapi).toBe('3.1.0');
+      expect(res.body.paths).toBeDefined();
+      expect(res.body.paths['/api/v1/trains/scopes']).toBeDefined();
+    });
   });
 
-  it('GET /docs serves Swagger UI HTML', async () => {
-    // swagger-ui-express redirects /docs -> /docs/
-    const res = await request(app).get('/docs/').expect(200);
-    expect(res.headers['content-type']).toContain('text/html');
-    expect(res.text.length).toBeGreaterThan(100);
+  describe('Metrics Middleware Error Handling', () => {
+    it('handles metrics collection errors gracefully', async () => {
+      // Create a mock metrics that throws an error
+      const errorMetrics = {
+        observeHttpRequest: () => {
+          throw new Error('Metrics collection failed');
+        },
+        getMetrics: async () => 'test_metrics',
+      };
+
+      const errorApp = createApp({
+        metrics: errorMetrics as any,
+        store: createMockStore(),
+      });
+
+      // This should not throw an error even if metrics collection fails
+      const res = await request(errorApp).get('/healthz').expect(200);
+      expect(res.body.ok).toBe(true);
+    });
   });
 });

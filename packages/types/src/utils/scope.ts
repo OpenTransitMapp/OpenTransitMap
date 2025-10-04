@@ -1,7 +1,17 @@
 import type { BBox, ScopeId } from '../schemas/viewport.js';
 import { ScopeIdSchema } from '../schemas/viewport.js';
 
-/** Clamp to integer zoom within [0,22]. Returns undefined if input is undefined. */
+/**
+ * Clamps a zoom level to valid integer values for Web Mercator tiles.
+ * 
+ * @param zoom - Optional zoom level to clamp
+ * @returns Clamped integer zoom level between 0 and 22, or undefined if input is undefined
+ * @example
+ * clampZoom(15.7) // returns 16
+ * clampZoom(-1)   // returns 0
+ * clampZoom(25)   // returns 22
+ * clampZoom()     // returns undefined
+ */
 export function clampZoom(zoom?: number): number | undefined {
   if (zoom == null) return undefined;
   const z = Math.round(zoom);
@@ -24,8 +34,28 @@ export function quantizeBBox(bbox: BBox, precision = 1e-6): BBox {
 }
 
 /**
- * Produce a deterministic, human-readable scope key string for idempotency.
- * Not cryptographic. Backends may hash this string if needed.
+ * Produces a deterministic, human-readable scope identifier string for viewport caching and deduplication.
+ * The scope ID combines city, bounding box, and schema version into a single string that uniquely 
+ * identifies a viewport area.
+ * 
+ * @remarks
+ * - Not intended for cryptographic purposes
+ * - Backends may hash this string if needed
+ * - Coordinates are quantized to ensure stable keys
+ * - Format: v{version}|{cityId}|{south}|{west}|{north}|{east}
+ * 
+ * @param cityId - Identifier for the city/transit system
+ * @param bbox - Bounding box coordinates (in degrees)
+ * @param opts - Optional parameters
+ * @param opts.precision - Coordinate quantization precision (default: 1e-6 ≈ 0.1m)
+ * @param opts.schemaVersion - Schema version string (default: "1")
+ * @param opts.zoom - Optional zoom level (currently unused)
+ * @returns A branded ScopeId string that uniquely identifies this viewport
+ * @throws {Error} If bbox coordinates become invalid after quantization
+ * 
+ * @example
+ * computeScopeId("nyc", {south: 40.7, west: -74, north: 40.8, east: -73.9})
+ * // returns "v1|nyc|40.700000|-74.000000|40.800000|-73.900000"
  */
 export function computeScopeId(
   cityId: string,
@@ -53,9 +83,28 @@ export function computeScopeId(
 // (computeScopeKey removed; use computeScopeId instead)
 
 /**
- * Clamp a bbox to the valid Web Mercator domain (EPSG:3857):
- * latitude to ±85.05113°, longitude to ±180°.
- * Does not reorder; call after ordering and before quantization.
+ * Clamps a bounding box to the valid Web Mercator projection domain (EPSG:3857).
+ * This ensures coordinates are valid for web map tiles and projections.
+ * 
+ * @remarks
+ * - Latitude is clamped to ±85.05113° (Web Mercator limit)
+ * - Longitude is clamped to ±180°
+ * - Does not reorder coordinates; call after ordering and before quantization
+ * - The specific latitude limit comes from the Web Mercator projection math:
+ *   85.05113° = atan(sinh(π)) * 180/π
+ * 
+ * @param bbox - Bounding box to clamp
+ * @returns New bounding box with coordinates clamped to valid ranges
+ * 
+ * @example
+ * clampToWebMercator({
+ *   south: -90, west: -200,
+ *   north: 90, east: 200
+ * })
+ * // returns {
+ * //   south: -85.05113, west: -180,
+ * //   north: 85.05113, east: 180
+ * // }
  */
 export function clampToWebMercator(bbox: BBox): BBox {
   const MAX_LAT = 85.05113;
@@ -67,7 +116,20 @@ export function clampToWebMercator(bbox: BBox): BBox {
   return { south, west, north, east };
 }
 
-/** Clamp a single coordinate (lat,lng) to Web Mercator domain. */
+/**
+ * Clamps a single coordinate pair to the valid Web Mercator projection domain.
+ * This is a convenience function for clamping individual points rather than bounding boxes.
+ * 
+ * @param lat - Latitude in degrees
+ * @param lng - Longitude in degrees
+ * @returns Object with clamped lat/lng values
+ * 
+ * @example
+ * clampCoordinate(90, 200)
+ * // returns { lat: 85.05113, lng: 180 }
+ * 
+ * @see clampToWebMercator for bounding box clamping
+ */
 export function clampCoordinate(lat: number, lng: number): { lat: number; lng: number } {
   const MAX_LAT = 85.05113;
   const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
