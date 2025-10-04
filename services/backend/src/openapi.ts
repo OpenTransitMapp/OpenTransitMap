@@ -8,6 +8,7 @@ import {
   GetScopedTrainsQuerySchema,
   ProvisionScopeResponseSchema,
   GetScopedTrainsResponseSchema,
+  GetScopesResponseSchema,
 } from '@open-transit-map/types';
 
 /**
@@ -52,6 +53,15 @@ export function createOpenApiDocument() {
         },
       },
       [`${prefix}/trains/scopes`]: {
+        get: {
+          summary: 'List active viewport scopes',
+          responses: {
+            '200': {
+              description: 'Active (non-expired) viewport scopes',
+              content: { 'application/json': { schema: GetScopesResponseSchema } },
+            },
+          },
+        },
         post: {
           summary: 'Provision a viewport scope',
           requestBody: {

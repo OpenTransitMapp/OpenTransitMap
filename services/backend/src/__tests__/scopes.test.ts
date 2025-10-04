@@ -155,6 +155,44 @@ describe('Scopes Router', () => {
     });
   });
 
+  describe('GET /trains/scopes (list)', () => {
+    it('returns active scopes array', async () => {
+      const scopeA = {
+        id: 'v1|nyc|40.7000|-74.0200|40.7600|-73.9600',
+        cityId: 'nyc',
+        bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
+        createdAt: new Date().toISOString(),
+      };
+      const scopeB = {
+        id: 'v1|sf|37.7000|-122.5200|37.8200|-122.3600',
+        cityId: 'sf',
+        bbox: { south: 37.7, west: -122.52, north: 37.82, east: -122.36, zoom: 12 },
+        createdAt: new Date().toISOString(),
+      };
+
+      (mockStore.forEachActiveScope as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce((cb: (s: any) => void) => {
+        cb(scopeA); cb(scopeB);
+      });
+
+      const res = await request(app)
+        .get(`${base}/trains/scopes`)
+        .expect(200);
+
+      expect(res.body.ok).toBe(true);
+      expect(Array.isArray(res.body.scopes)).toBe(true);
+      expect(res.body.scopes).toEqual([scopeA, scopeB]);
+    });
+
+    it('returns empty array when no scopes', async () => {
+      (mockStore.forEachActiveScope as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce((_cb: (s: any) => void) => {});
+      const res = await request(app)
+        .get(`${base}/trains/scopes`)
+        .expect(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.scopes).toEqual([]);
+    });
+  });
+
   describe('GET /trains', () => {
     it('returns 404 for unknown scope', async () => {
       (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);

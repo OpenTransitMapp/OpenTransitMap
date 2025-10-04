@@ -28,5 +28,6 @@ export function createMockStore(): InMemoryStore {
     getScope: vi.fn(),
     setFrame: vi.fn(),
     getFrame: vi.fn().mockImplementation(() => undefined),
+    forEachActiveScope: vi.fn().mockImplementation((_cb: (s: any) => void) => {}),
   } as unknown as InMemoryStore;
 }
