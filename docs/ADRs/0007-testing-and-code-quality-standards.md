@@ -15,12 +15,14 @@ Date: 2025-01-04
 As the OpenTransitMap project grows, we need consistent standards for code quality and testing to ensure maintainability, reliability, and developer productivity. The current codebase has varying levels of test coverage and documentation, making it difficult for new developers to understand and contribute effectively.
 
 **Problems:**
+
 - Inconsistent test coverage across modules
 - Lack of clear documentation for complex business logic
 - Tightly coupled components that are difficult to test in isolation
 - No clear standards for when and how to add tests
 
 **Constraints:**
+
 - Must not duplicate existing test coverage
 - Should improve developer experience without slowing down development
 - Must be practical for both new features and legacy code refactoring
@@ -41,17 +43,17 @@ We will adopt three core standards for all new development and gradually apply t
 
 ```typescript
 // ✅ Good: Comprehensive test coverage
-describe('UserService', () => {
-  describe('createUser', () => {
-    it('creates user with valid data', () => {
+describe("UserService", () => {
+  describe("createUser", () => {
+    it("creates user with valid data", () => {
       // Happy path test
     });
-    
-    it('rejects invalid email format', () => {
+
+    it("rejects invalid email format", () => {
       // Error case test
     });
-    
-    it('handles database connection failure', () => {
+
+    it("handles database connection failure", () => {
       // Edge case test
     });
   });
@@ -59,6 +61,7 @@ describe('UserService', () => {
 ```
 
 **Test Requirements:**
+
 - **Unit Tests**: Test individual functions/methods in isolation
 - **Integration Tests**: Test component interactions with mocked dependencies
 - **Error Cases**: Test all error conditions and edge cases
@@ -66,23 +69,23 @@ describe('UserService', () => {
 
 #### 2. TSDoc Documentation Standards
 
-```typescript
+````typescript
 // ✅ Good: Clear, concise TSDoc
 /**
  * Creates a new viewport scope for train tracking.
- * 
+ *
  * This endpoint provisions a new viewport scope based on the provided bounding box.
  * It performs several normalization steps to ensure consistent scope identifiers:
  * 1. Validates the request body
  * 2. Clamps coordinates to Web Mercator bounds
  * 3. Quantizes the bounding box for stable keys
  * 4. Computes a deterministic scope ID
- * 
+ *
  * @param cityId - City identifier for the scope
  * @param bbox - Bounding box coordinates (in degrees)
  * @returns Promise resolving to the created scope
  * @throws {ValidationError} When bbox coordinates are invalid
- * 
+ *
  * @example
  * ```typescript
  * const scope = await createScope('nyc', {
@@ -93,9 +96,10 @@ describe('UserService', () => {
 async function createScope(cityId: string, bbox: BBox): Promise<Scope> {
   // Implementation
 }
-```
+````
 
 **Documentation Requirements:**
+
 - **Public APIs**: All exported functions, classes, and interfaces
 - **Complex Logic**: Business rules and algorithms
 - **Parameters**: Clear descriptions with types
@@ -114,9 +118,9 @@ interface MetricsDeps {
 
 class MetricsService {
   constructor(private deps: MetricsDeps) {}
-  
+
   recordRequest(method: string, duration: number) {
-    this.deps.logger.info('Request recorded');
+    this.deps.logger.info("Request recorded");
     // Implementation
   }
 }
@@ -127,6 +131,7 @@ const metrics = new MetricsService({ logger: mockLogger, config: testConfig });
 ```
 
 **DI Requirements:**
+
 - **Constructor Injection**: Dependencies passed via constructor
 - **Interface Segregation**: Use small, focused interfaces
 - **Test Doubles**: Easy to mock dependencies for testing
@@ -135,18 +140,21 @@ const metrics = new MetricsService({ logger: mockLogger, config: testConfig });
 ### Why
 
 #### Testing Benefits
+
 - **Confidence**: Changes can be made safely knowing tests will catch regressions
 - **Documentation**: Tests serve as living documentation of expected behavior
 - **Design**: Writing tests first often leads to better API design
 - **Debugging**: Failing tests quickly identify the source of problems
 
 #### Documentation Benefits
+
 - **Onboarding**: New developers can understand code faster
 - **IDE Support**: Better autocomplete and type checking
 - **Maintenance**: Clear intent reduces bugs during refactoring
 - **API Design**: Forces developers to think about the interface
 
 #### DI Benefits
+
 - **Testability**: Easy to swap dependencies for testing
 - **Flexibility**: Can change implementations without changing consumers
 - **Single Responsibility**: Each component has a clear, focused purpose
@@ -163,6 +171,7 @@ Think of these standards like building a house:
 ## Consequences
 
 ### Pros
+
 - **Higher Code Quality**: Consistent standards lead to more maintainable code
 - **Faster Development**: Clear patterns reduce decision fatigue
 - **Better Onboarding**: New developers can contribute more quickly
@@ -170,11 +179,13 @@ Think of these standards like building a house:
 - **Easier Refactoring**: Well-tested, documented code is safer to change
 
 ### Cons
+
 - **Initial Overhead**: More time required upfront for new features
 - **Learning Curve**: Team needs to adapt to new patterns
 - **Legacy Code**: Existing code may not meet standards immediately
 
 ### Mitigations
+
 - **Gradual Adoption**: Apply standards to new code first, refactor legacy code over time
 - **Code Reviews**: Use PR reviews to enforce standards
 - **Documentation**: Provide examples and guidelines for team reference
@@ -183,30 +194,36 @@ Think of these standards like building a house:
 ## Alternatives Considered
 
 ### 1. Minimal Testing Approach
+
 - **What**: Only test critical paths and happy cases
 - **Why Rejected**: Insufficient coverage leads to bugs in production
 
 ### 2. External Documentation Only
+
 - **What**: Keep documentation in separate files (README, wiki)
 - **Why Rejected**: Documentation becomes outdated and disconnected from code
 
 ### 3. Service Locator Pattern
+
 - **What**: Use a global registry to find dependencies
 - **Why Rejected**: Harder to test and creates hidden dependencies
 
 ## Implementation Notes
 
 ### Phase 1: New Code Standards (Immediate)
+
 - All new features must follow these standards
 - Update code review checklist to include standards
 - Add linting rules for TSDoc and test coverage
 
 ### Phase 2: Legacy Code Refactoring (Gradual)
+
 - Refactor high-risk modules first
 - Add tests when fixing bugs or adding features
 - Document complex business logic as encountered
 
 ### Phase 3: Tooling and Automation (Ongoing)
+
 - Set up coverage thresholds in CI
 - Add TSDoc linting rules
 - Create templates and examples for common patterns
@@ -214,11 +231,13 @@ Think of these standards like building a house:
 ## Metrics & Observability
 
 ### Code Quality Metrics
+
 - **Test Coverage**: Maintain >95% statement coverage
 - **Documentation Coverage**: Track percentage of public APIs documented
 - **Cyclomatic Complexity**: Monitor complexity of functions and classes
 
 ### Development Metrics
+
 - **Bug Rate**: Track bugs per feature over time
 - **Time to First Contribution**: Measure onboarding effectiveness
 - **Code Review Time**: Monitor impact on development velocity

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Metrics } from '../metrics.js';
 import { InMemoryStore } from '../store.js';
 
@@ -33,18 +33,6 @@ vi.mock('prom-client', () => {
 });
 
 describe('Services', () => {
-  // let originalEnv: Record<string, string | undefined>;
-
-  // beforeEach(() => {
-  //   // Save original environment
-  //   originalEnv = { ...process.env };
-  // });
-
-  // afterEach(() => {
-  //   // Restore original environment
-  //   process.env = originalEnv;
-  // });
-
   describe('Service Creation', () => {
     it('creates metrics instance with default prefix', () => {
       const metrics = new Metrics();
