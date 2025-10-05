@@ -13,7 +13,7 @@ describe('DefaultEventValidator', () => {
   });
 
   describe('validateEnvelope', () => {
-    it('should validate a valid vehicle upsert event', () => {
+    it('should accept a valid vehicle upsert event with all required fields', () => {
       const envelope: EventEnvelope = {
         schemaVersion: '1',
         data: {
@@ -36,7 +36,7 @@ describe('DefaultEventValidator', () => {
       expect(result.errors).toBeUndefined();
     });
 
-    it('should validate a valid vehicle remove event', () => {
+    it('should accept a valid vehicle remove event with all required fields', () => {
       const envelope: EventEnvelope = {
         schemaVersion: '1',
         data: {
@@ -57,7 +57,7 @@ describe('DefaultEventValidator', () => {
       expect(result.errors).toBeUndefined();
     });
 
-    it('should reject envelope with missing data.kind', () => {
+    it('should reject envelope when data.kind field is missing', () => {
       const invalidEnvelope = {
         schemaVersion: '1',
         data: {

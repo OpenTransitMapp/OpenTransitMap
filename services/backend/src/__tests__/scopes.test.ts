@@ -31,7 +31,7 @@ describe('Scopes Router', () => {
       bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
     };
 
-    it('provisions a new scope and returns a scoped frame (201)', async () => {
+    it('should create a new scope and return a scoped frame with 201 status when no existing scope is found', async () => {
       // Ensure no existing frame so route creates a new one
       (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
 
@@ -62,7 +62,7 @@ describe('Scopes Router', () => {
       expect(mockStore.setFrame).toHaveBeenCalled();
     });
 
-    it('uses externalScopeKey when provided and returns 200 if existing', async () => {
+    it('should return existing scope with 200 status when externalScopeKey is provided and scope already exists', async () => {
       const key = 'custom-scope-key';
       const frame: ScopedTrainsFrame = {
         scopeId: key,

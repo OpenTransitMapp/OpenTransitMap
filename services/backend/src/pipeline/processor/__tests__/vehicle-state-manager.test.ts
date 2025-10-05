@@ -13,7 +13,7 @@ describe('DefaultVehicleStateManager', () => {
   });
 
   describe('upsertVehicle', () => {
-    it('should add a new vehicle to a new city', () => {
+    it('should add a new vehicle to a city when no vehicles exist for that city', () => {
       const cityId = 'test-city';
       const vehicleId = 'vehicle-1';
       const position: VehiclePosition = {
@@ -29,7 +29,7 @@ describe('DefaultVehicleStateManager', () => {
       expect(vehicles.get(vehicleId)).toEqual(position);
     });
 
-    it('should update an existing vehicle', () => {
+    it('should update an existing vehicle when the same vehicle ID is added again', () => {
       const cityId = 'test-city';
       const vehicleId = 'vehicle-1';
       const position1: VehiclePosition = {
@@ -143,7 +143,7 @@ describe('DefaultVehicleStateManager', () => {
   });
 
   describe('removeVehicle', () => {
-    it('should remove an existing vehicle', () => {
+    it('should remove a vehicle from a city when the vehicle exists', () => {
       const cityId = 'test-city';
       const vehicleId = 'vehicle-1';
       const position: VehiclePosition = {
@@ -159,7 +159,7 @@ describe('DefaultVehicleStateManager', () => {
       expect(manager.getVehiclesForCity(cityId).size).toBe(0);
     });
 
-    it('should handle removal of non-existent vehicle', () => {
+    it('should log a warning when attempting to remove a vehicle that does not exist', () => {
       const cityId = 'test-city';
       const vehicleId = 'vehicle-1';
 
@@ -183,7 +183,7 @@ describe('DefaultVehicleStateManager', () => {
       );
     });
 
-    it('should handle removal from non-existent city', () => {
+    it('should log a warning when attempting to remove a vehicle from a city that does not exist', () => {
       const cityId = 'non-existent-city';
       const vehicleId = 'vehicle-1';
 

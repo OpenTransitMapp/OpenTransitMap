@@ -12,7 +12,7 @@ describe('DefaultCircuitBreaker', () => {
   });
 
   describe('constructor', () => {
-    it('should initialize with closed state', () => {
+    it('should initialize circuit breaker in closed state with zero failure count', () => {
       const state = circuitBreaker.getState();
       expect(state.state).toBe('closed');
       expect(state.failureCount).toBe(0);
@@ -22,7 +22,7 @@ describe('DefaultCircuitBreaker', () => {
   });
 
   describe('execute', () => {
-    it('should execute function successfully in closed state', async () => {
+    it('should execute function successfully when circuit breaker is in closed state', async () => {
       const mockFn = vi.fn().mockResolvedValue('success');
       const context = 'test-context';
 
@@ -33,7 +33,7 @@ describe('DefaultCircuitBreaker', () => {
       expect(circuitBreaker.getState().state).toBe('closed');
     });
 
-    it('should reset failure count on successful execution', async () => {
+    it('should reset failure count to zero when function executes successfully after previous failures', async () => {
       // First, cause some failures
       const failingFn = vi.fn().mockRejectedValue(new Error('test error'));
       const context = 'test-context';
@@ -96,7 +96,7 @@ describe('DefaultCircuitBreaker', () => {
       expect(successFn).not.toHaveBeenCalled();
     });
 
-    it('should move to half-open state after timeout', async () => {
+    it('should move to half-open state after timeout and close on success', async () => {
       // Open the circuit
       const failingFn = vi.fn().mockRejectedValue(new Error('test error'));
       const context = 'test-context';
@@ -111,19 +111,19 @@ describe('DefaultCircuitBreaker', () => {
 
       expect(circuitBreaker.getState().state).toBe('open');
 
-      // Wait for timeout
-      await new Promise(resolve => setTimeout(resolve, 1100));
-
-      // Mock Date.now to simulate time passing
+      // Mock Date.now to simulate time passing beyond timeout
       const originalNow = Date.now;
-      vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1100);
+      const futureTime = Date.now() + 1100;
+      vi.spyOn(Date, 'now').mockReturnValue(futureTime);
 
       const successFn = vi.fn().mockResolvedValue('success');
       const result = await circuitBreaker.execute(successFn, context);
 
+      // Should succeed and close the circuit
       expect(result).toBe('success');
       expect(circuitBreaker.getState().state).toBe('closed');
       expect(successFn).toHaveBeenCalledTimes(1);
+      expect(circuitBreaker.getFailureCount()).toBe(0);
 
       // Restore Date.now
       Date.now = originalNow;
@@ -144,14 +144,15 @@ describe('DefaultCircuitBreaker', () => {
 
       expect(circuitBreaker.getState().state).toBe('open');
 
-      // Wait for timeout and move to half-open
-      await new Promise(resolve => setTimeout(resolve, 1100));
+      // Mock Date.now to simulate time passing beyond timeout
       const originalNow = Date.now;
-      vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1100);
+      const futureTime = Date.now() + 1100;
+      vi.spyOn(Date, 'now').mockReturnValue(futureTime);
 
       const successFn = vi.fn().mockResolvedValue('success');
-      await circuitBreaker.execute(successFn, context);
+      const result = await circuitBreaker.execute(successFn, context);
 
+      expect(result).toBe('success');
       expect(circuitBreaker.getState().state).toBe('closed');
       expect(circuitBreaker.getFailureCount()).toBe(0);
 
