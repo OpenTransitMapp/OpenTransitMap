@@ -6,6 +6,7 @@
  * business logic.
  *
  * @public
+ * @since 1.0.0
  */
 export const Topics = {
   // Canonical normalized events (vehicle upserts/removes)
@@ -14,6 +15,11 @@ export const Topics = {
   StateDelta: 'state.delta',
 } as const;
 
+/**
+ * Type representing valid topic names.
+ * 
+ * @since 1.0.0
+ */
 export type Topic = typeof Topics[keyof typeof Topics];
 
 /**
@@ -21,6 +27,8 @@ export type Topic = typeof Topics[keyof typeof Topics];
  *
  * @remarks
  * Groups reflect pipeline stages: normalizer → processor → broadcaster.
+ * 
+ * @since 1.0.0
  */
 export const ConsumerGroups = {
   Normalizer: 'normalizer',
