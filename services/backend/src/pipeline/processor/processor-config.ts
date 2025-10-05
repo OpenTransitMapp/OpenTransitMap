@@ -120,11 +120,21 @@ export function createProcessorConfig(
       z.number().int().positive().optional()
     ),
     enableMetrics: z.preprocess(
-      (val) => val ? val === 'true' : undefined,
+      (val) => {
+        if (!val) return undefined;
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        throw new Error(`Invalid boolean value: ${val}`);
+      },
       z.boolean().optional()
     ),
     enableDetailedLogging: z.preprocess(
-      (val) => val ? val === 'true' : undefined,
+      (val) => {
+        if (!val) return undefined;
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        throw new Error(`Invalid boolean value: ${val}`);
+      },
       z.boolean().optional()
     )
   });

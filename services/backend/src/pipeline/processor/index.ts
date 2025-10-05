@@ -8,7 +8,7 @@
  */
 
 // Main processor class
-export { Processor } from '../processor.js';
+export { Processor } from './processor.js';
 
 // Configuration
 export { 

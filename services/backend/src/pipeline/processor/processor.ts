@@ -1,6 +1,6 @@
 import type { EventBus } from '@open-transit-map/infra';
 import { Topics } from '@open-transit-map/infra';
-import type { InMemoryStore } from '../store.js';
+import type { InMemoryStore } from '../../store.js';
 import type { Logger } from 'pino';
 import type { 
   VehicleStateManager, 
@@ -9,15 +9,15 @@ import type {
   ProcessorMetrics, 
   CircuitBreaker, 
   RetryPolicy
-} from './processor/processor-types.js';
-import type { ProcessorConfig } from './processor/processor-config.js';
-import { createProcessorConfig } from './processor/processor-config.js';
-import { DefaultVehicleStateManager } from './processor/components/vehicle-state-manager.js';
-import { DefaultFrameComputer } from './processor/components/frame-computer.js';
-import { DefaultEventValidator } from './processor/components/event-validator.js';
-import { DefaultProcessorMetrics } from './processor/processor-metrics.js';
-import { DefaultCircuitBreaker } from './processor/components/circuit-breaker.js';
-import { createRetryPolicy } from './processor/components/retry-policy.js';
+} from './processor-types.js';
+import type { ProcessorConfig } from './processor-config.js';
+import { createProcessorConfig } from './processor-config.js';
+import { DefaultVehicleStateManager } from './components/vehicle-state-manager.js';
+import { DefaultFrameComputer } from './components/frame-computer.js';
+import { DefaultEventValidator } from './components/event-validator.js';
+import { DefaultProcessorMetrics } from './processor-metrics.js';
+import { DefaultCircuitBreaker } from './components/circuit-breaker.js';
+import { createRetryPolicy } from './components/retry-policy.js';
 
 /**
  * Real-time vehicle data processor for the Open Transit Map system.

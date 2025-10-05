@@ -100,7 +100,7 @@ sequenceDiagram
 ### **Basic Usage**
 
 ```typescript
-import { Processor } from './pipeline/processor.js';
+import { Processor } from './processor.js';
 
 // Create processor with dependencies
 const processor = new Processor(store, bus, logger);
@@ -115,7 +115,7 @@ await processor.stop();
 ### **Advanced Usage with Custom Configuration**
 
 ```typescript
-import { Processor, createProcessorConfig } from './pipeline/processor.js';
+import { Processor, createProcessorConfig } from './processor.js';
 
 // Custom configuration
 const config = createProcessorConfig({
@@ -131,7 +131,7 @@ const processor = new Processor(store, bus, logger, config);
 ### **Testing with Custom Dependencies**
 
 ```typescript
-import { Processor } from './pipeline/processor.js';
+import { Processor } from './processor.js';
 import { MockVehicleStateManager } from './test-utils.js';
 
 // Create processor with mocked dependencies

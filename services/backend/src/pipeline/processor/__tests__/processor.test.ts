@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Processor } from '../../processor.js';
+import { Processor } from '../processor.js';
 // Types are used in the mock functions
 import { Topics } from '@open-transit-map/infra';
 import { createMockLogger, createMockStore, createMockEventBus } from '../../../__tests__/test-utils.js';
