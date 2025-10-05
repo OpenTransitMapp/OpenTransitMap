@@ -529,8 +529,11 @@ __metadata:
   dependencies:
     "@open-transit-map/infra": "workspace:*"
     "@open-transit-map/types": "workspace:*"
+    "@types/node": "npm:22.7.4"
     ioredis: "npm:5.4.1"
     pino: "npm:8.19.0"
+    ts-node: "npm:10.9.2"
+    typescript: "npm:5.6.3"
   languageName: unknown
   linkType: soft
 

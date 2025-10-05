@@ -5,11 +5,15 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "dist",
-    "rootDir": "../..",
+    "rootDir": "src",
     "strict": true,
     "noEmitOnError": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "../../packages/types/src/**/*"]
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/infra" }
+  ]
 }
 

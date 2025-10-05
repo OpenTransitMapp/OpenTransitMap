@@ -9,12 +9,14 @@ import globals from 'globals';
 export default [
   js.configs.recommended,
   {
-    files: ['**/*.{js,ts,tsx}'],
     ignores: [
       '**/dist/**',
       '**/build/**',
       '**/.yarn/**',
     ],
+  },
+  {
+    files: ['**/*.{js,ts,tsx}'],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
