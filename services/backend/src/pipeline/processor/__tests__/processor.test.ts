@@ -1,33 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Processor } from '../../processor.js';
-import type { InMemoryStore } from '../../../store.js';
-import type { EventBus } from '@open-transit-map/infra';
+// Types are used in the mock functions
 import { Topics } from '@open-transit-map/infra';
-import type { Logger } from 'pino';
+import { createMockLogger, createMockStore, createMockEventBus } from '../../../__tests__/test-utils.js';
 
 // Mock dependencies
-const mockStore = {
-  setFrame: vi.fn(),
-  forEachActiveScope: vi.fn(),
-  defaultTtlMs: 300000
-} as unknown as InMemoryStore;
-
-const mockBus: EventBus = {
-  subscribe: vi.fn(() => vi.fn()), // Returns unsubscribe function
-  publish: vi.fn()
-};
-
-const mockLogger: Logger = {
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-  debug: vi.fn(),
-  child: vi.fn(() => mockLogger),
-  level: 'info',
-  silent: vi.fn(),
-  trace: vi.fn(),
-  fatal: vi.fn()
-} as any;
+const mockStore = createMockStore();
+const mockBus = createMockEventBus();
+const mockLogger = createMockLogger();
 
 describe('Processor', () => {
   let processor: Processor;
