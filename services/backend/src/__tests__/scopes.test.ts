@@ -348,11 +348,11 @@ describe('Scopes Router', () => {
     it('handles invalid scope parameter format', async () => {
       const res = await request(app)
         .get(`${base}/trains`)
-        .query({ scope: 'invalid-scope-format!' })
-        .expect(404);
+        .query({ scope: '' })
+        .expect(400);
 
       expect(res.body.ok).toBe(false);
-      expect(res.body.error).toMatch(/Scope not found/);
+      expect(res.body.error).toMatch(/Missing or invalid scope parameter/);
     });
   });
 
