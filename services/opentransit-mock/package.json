@@ -1,0 +1,17 @@
+{
+  "name": "@open-transit-map/opentransit-mock",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/main.js",
+    "start:dev": "node --loader ts-node/esm src/main.ts"
+  },
+  "dependencies": {
+    "@open-transit-map/infra": "workspace:*",
+    "@open-transit-map/types": "workspace:*",
+    "ioredis": "5.4.1",
+    "pino": "8.19.0"
+  }
+}
