@@ -530,10 +530,13 @@ __metadata:
     "@open-transit-map/infra": "workspace:*"
     "@open-transit-map/types": "workspace:*"
     "@types/node": "npm:22.7.4"
+    "@vitest/coverage-v8": "npm:1.6.0"
     ioredis: "npm:5.4.1"
     pino: "npm:8.19.0"
     ts-node: "npm:10.9.2"
     typescript: "npm:5.6.3"
+    vitest: "npm:1.6.0"
+    zod: "npm:3.23.8"
   languageName: unknown
   linkType: soft
 
@@ -5015,6 +5018,13 @@ __metadata:
   peerDependencies:
     zod: ^3.25.74 || ^4.0.0
   checksum: 10c0/ef737a934aa553960f593823d8a8bd2a243155d27818b90333ad7acf0e7b580655ae539d4a38e1869674a38cd5c02301c2c99726df4a8388ecb3c80a35ec0710
+  languageName: node
+  linkType: hard
+
+"zod@npm:3.23.8":
+  version: 3.23.8
+  resolution: "zod@npm:3.23.8"
+  checksum: 10c0/8f14c87d6b1b53c944c25ce7a28616896319d95bc46a9660fe441adc0ed0a81253b02b5abdaeffedbeb23bdd25a0bf1c29d2c12dd919aef6447652dd295e3e69
   languageName: node
   linkType: hard
 

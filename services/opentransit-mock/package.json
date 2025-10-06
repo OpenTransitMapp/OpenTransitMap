@@ -6,17 +6,23 @@
   "scripts": {
     "build": "tsc -b",
     "start": "node dist/main.js",
-    "start:dev": "node --loader ts-node/esm src/main.ts"
+    "start:dev": "node --loader ts-node/esm src/main.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@open-transit-map/infra": "workspace:*",
     "@open-transit-map/types": "workspace:*",
     "ioredis": "5.4.1",
-    "pino": "8.19.0"
+    "pino": "8.19.0",
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/node": "22.7.4",
+    "@vitest/coverage-v8": "1.6.0",
     "ts-node": "10.9.2",
-    "typescript": "5.6.3"
+    "typescript": "5.6.3",
+    "vitest": "1.6.0"
   }
 }
