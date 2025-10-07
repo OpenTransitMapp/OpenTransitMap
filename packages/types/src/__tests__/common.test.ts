@@ -12,42 +12,48 @@ import {
 } from '../schemas/common.js';
 
 describe('common schemas', () => {
-  it.each([
-    ['x', true],
-    [' ', false],
-    ['', false],
-  ])('validates NonEmptyString(%s) -> %s', (value, ok) => {
-    expect(NonEmptyStringSchema.safeParse(value as string).success).toBe(ok);
+  describe('NonEmptyStringSchema', () => {
+    it.each([
+      ['x', true],
+      [' ', false],
+      ['', false],
+    ])('should accept non-empty strings and reject empty/whitespace-only strings: %s -> %s', (value, ok) => {
+      expect(NonEmptyStringSchema.safeParse(value as string).success).toBe(ok);
+    });
   });
 
-  it.each([
-    ['vehicle-123', true],
-    ['   ', false],
-    ['', false],
-  ])('validates Id(%s) -> %s', (value, ok) => {
-    expect(IdSchema.safeParse(value as string).success).toBe(ok);
+  describe('IdSchema', () => {
+    it.each([
+      ['vehicle-123', true],
+      ['   ', false],
+      ['', false],
+    ])('should accept valid IDs and reject empty/whitespace-only strings: %s -> %s', (value, ok) => {
+      expect(IdSchema.safeParse(value as string).success).toBe(ok);
+    });
   });
 
-  it.each([
-    ['2024-01-01T00:00:00Z', true],             // valid: UTC with full time
-    ['1999-12-31T23:59:59Z', true],             // valid: end of day UTC
-    ['2020-02-29T12:34:56Z', true],             // valid: leap day
-    ['2024-01-01T00:00:00.123Z', true],         // valid: fractional seconds (ms)
-    ['2024-01-01T00:00:00.123456Z', true],      // valid: fractional seconds (µs)
-    ['2024-01-01T00:00:00.000000000Z', true],   // valid: fractional seconds (ns)
-    ['2024-06-30T23:59:59Z', true],             // valid: last second of June
-    ['2024-01-01T00:00:00.1Z', true],           // valid: 1 digit fractional seconds
-    ['2024-01-01T00:00:00.12Z', true],          // valid: 2 digit fractional seconds
-    ['2024-01-01T00:00:00.000Z', true],         // valid: 3 digit fractional seconds (zero)
-    ['2024-01-01T00:00:00.000000Z', true],      // valid: 6 digit fractional seconds
-    ['2024-01-01T00:00:00.00000000Z', true],    // valid: 8 digit fractional seconds
-    ['2024-01-01T00:00:00.000000000Z', true],   // valid: 9 digit fractional seconds
-    ['2024-01-01T23:59:59.999999999Z', true],   // valid: max time with max fractional
-    ['2024-01-01T00:00:00.000000001Z', true],   // valid: min nonzero nanosecond
-    ['2024-01-01T00:00:00.000000010Z', true],   // valid: 10 nanoseconds
-    ['2024-01-01T00:00:00.000000100Z', true],   // valid: 100 nanoseconds
-    ['2024-01-01T00:00:00.000001000Z', true],   // valid: 1 microsecond
-    ['2024-01-01T00:00:00.000010000Z', true],   // valid: 10 microseconds
+  describe('IsoDateTimeStringSchema', () => {
+    describe('valid ISO 8601 datetime strings', () => {
+      it.each([
+        ['2024-01-01T00:00:00Z', true],             // valid: UTC with full time
+        ['1999-12-31T23:59:59Z', true],             // valid: end of day UTC
+        ['2020-02-29T12:34:56Z', true],             // valid: leap day
+        ['2024-01-01T00:00:00.123Z', true],         // valid: fractional seconds (ms)
+        ['2024-01-01T00:00:00.123456Z', true],      // valid: fractional seconds (µs)
+        ['2024-01-01T00:00:00.000000000Z', true],   // valid: fractional seconds (ns)
+        ['2024-06-30T23:59:59Z', true],             // valid: last second of June
+        ['2024-01-01T00:00:00.1Z', true],           // valid: 1 digit fractional seconds
+        ['2024-01-01T00:00:00.12Z', true],          // valid: 2 digit fractional seconds
+        ['2024-01-01T00:00:00.000Z', true],         // valid: 3 digit fractional seconds (zero)
+        ['2024-01-01T00:00:00.000000Z', true],      // valid: 6 digit fractional seconds
+        ['2024-01-01T00:00:00.00000000Z', true],    // valid: 8 digit fractional seconds
+        ['2024-01-01T00:00:00.000000000Z', true],   // valid: 9 digit fractional seconds
+        ['2024-01-01T23:59:59.999999999Z', true],   // valid: max time with max fractional
+        ['2024-01-01T00:00:00.000000001Z', true],   // valid: min nonzero nanosecond
+        ['2024-01-01T00:00:00.000000010Z', true],   // valid: 10 nanoseconds
+        ['2024-01-01T00:00:00.000000100Z', true],   // valid: 100 nanoseconds
+        ['2024-01-01T00:00:00.000001000Z', true],   // valid: 1 microsecond
+        ['2024-01-01T00:00:00.000010000Z', true],   // valid: 10 microseconds
     ['2024-01-01T00:00:00.000100000Z', true],   // valid: 100 microseconds
     ['2024-01-01T00:00:00.001000000Z', true],   // valid: 1 millisecond
     ['2024-01-01T00:00:00.010000000Z', true],   // valid: 10 milliseconds
@@ -1828,5 +1834,7 @@ describe('common schemas', () => {
     ['   ', false],
   ])('HttpUrlSchema(%s) -> %s', (value, ok) => {
     expect(HttpUrlSchema.safeParse(value as any).success).toBe(ok);
+  });
+    });
   });
 });

@@ -31,7 +31,7 @@ describe('Scopes Router', () => {
       bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
     };
 
-    it('provisions a new scope and returns a scoped frame (201)', async () => {
+    it('should create a new scope and return a scoped frame with 201 status when no existing scope is found', async () => {
       // Ensure no existing frame so route creates a new one
       (mockStore.getFrame as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(undefined);
 
@@ -62,7 +62,7 @@ describe('Scopes Router', () => {
       expect(mockStore.setFrame).toHaveBeenCalled();
     });
 
-    it('uses externalScopeKey when provided and returns 200 if existing', async () => {
+    it('should return existing scope with 200 status when externalScopeKey is provided and scope already exists', async () => {
       const key = 'custom-scope-key';
       const frame: ScopedTrainsFrame = {
         scopeId: key,
@@ -152,6 +152,44 @@ describe('Scopes Router', () => {
       expect(res.body.ok).toBe(false);
       expect(res.body.error).toMatch(/Invalid viewport request/);
       expect(mockStore.upsertScope).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /trains/scopes (list)', () => {
+    it('returns active scopes array', async () => {
+      const scopeA = {
+        id: 'v1|nyc|40.7000|-74.0200|40.7600|-73.9600',
+        cityId: 'nyc',
+        bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
+        createdAt: new Date().toISOString(),
+      };
+      const scopeB = {
+        id: 'v1|sf|37.7000|-122.5200|37.8200|-122.3600',
+        cityId: 'sf',
+        bbox: { south: 37.7, west: -122.52, north: 37.82, east: -122.36, zoom: 12 },
+        createdAt: new Date().toISOString(),
+      };
+
+      (mockStore.forEachActiveScope as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce((cb: (s: any) => void) => {
+        cb(scopeA); cb(scopeB);
+      });
+
+      const res = await request(app)
+        .get(`${base}/trains/scopes`)
+        .expect(200);
+
+      expect(res.body.ok).toBe(true);
+      expect(Array.isArray(res.body.scopes)).toBe(true);
+      expect(res.body.scopes).toEqual([scopeA, scopeB]);
+    });
+
+    it('returns empty array when no scopes', async () => {
+      (mockStore.forEachActiveScope as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce((_cb: (s: any) => void) => {});
+      const res = await request(app)
+        .get(`${base}/trains/scopes`)
+        .expect(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.scopes).toEqual([]);
     });
   });
 
@@ -310,11 +348,11 @@ describe('Scopes Router', () => {
     it('handles invalid scope parameter format', async () => {
       const res = await request(app)
         .get(`${base}/trains`)
-        .query({ scope: 'invalid-scope-format!' })
-        .expect(404);
+        .query({ scope: '' })
+        .expect(400);
 
       expect(res.body.ok).toBe(false);
-      expect(res.body.error).toMatch(/Scope not found/);
+      expect(res.body.error).toMatch(/Missing or invalid scope parameter/);
     });
   });
 

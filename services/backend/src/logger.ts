@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import pino from 'pino';
+import pino, { Logger } from 'pino';
 import pinoHttp, { Options } from 'pino-http';
 
 /**
@@ -17,7 +17,7 @@ import pinoHttp, { Options } from 'pino-http';
  * logger.info('Application started');
  * ```
  */
-export function createLogger(options?: pino.LoggerOptions) {
+export function createLogger(options?: pino.LoggerOptions): Logger {
   return pino({
     level: process.env.LOG_LEVEL || 'info',
     base: { service: 'backend' },
@@ -51,7 +51,7 @@ export function createLogger(options?: pino.LoggerOptions) {
  * app.use(httpLogger);
  * ```
  */
-export function createHttpLogger(logger: pino.Logger) {
+export function createHttpLogger(logger: Logger) {
   return pinoHttp({
     logger,
     genReqId: (req) => req.id || randomUUID(),
@@ -83,7 +83,7 @@ export function createHttpLogger(logger: pino.Logger) {
  * errorLogger.error({ err: error, context: 'user-action' }, 'Operation failed');
  * ```
  */
-export function createErrorLogger(logger: pino.Logger) {
+export function createErrorLogger(logger: Logger) {
   // Do not pin level to 'error' so warnings (4xx) can be emitted too.
   return logger.child({
     component: 'error-handler',
@@ -106,7 +106,7 @@ export function createErrorLogger(logger: pino.Logger) {
  * metricsLogger.info({ metric: 'response_time', value: 150 }, 'Performance metric');
  * ```
  */
-export function createMetricsLogger(logger: pino.Logger) {
+export function createMetricsLogger(logger: Logger) {
   return logger.child({
     component: 'metrics',
     level: 'info',
@@ -129,9 +129,19 @@ export function createMetricsLogger(logger: pino.Logger) {
  * storeLogger.info({ operation: 'upsert', scopeId: 'nyc' }, 'Scope updated');
  * ```
  */
-export function createStoreLogger(logger: pino.Logger) {
+export function createStoreLogger(logger: Logger) {
   return logger.child({
     component: 'store',
+    level: 'info',
+  });
+}
+
+/**
+ * Creates a specialized pipeline logger for ingest/processor/broadcaster.
+ */
+export function createPipelineLogger(logger: Logger) {
+  return logger.child({
+    component: 'pipeline',
     level: 'info',
   });
 }
@@ -142,3 +152,11 @@ export const httpLogger = createHttpLogger(logger);
 export const errorLogger = createErrorLogger(logger);
 export const metricsLogger = createMetricsLogger(logger);
 export const storeLogger = createStoreLogger(logger);
+export const pipelineLogger = createPipelineLogger(logger);
+
+/**
+ * Pre-instantiated sub-loggers for pipeline components to centralize
+ * logger creation in one module.
+ */
+export const pipelineEventBusLogger = pipelineLogger.child({ subcomponent: 'eventbus', impl: 'memory' });
+export const pipelineValkeyBusLogger = pipelineLogger.child({ subcomponent: 'eventbus', impl: 'valkey' });

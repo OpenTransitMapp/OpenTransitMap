@@ -3,7 +3,9 @@
   "files": [],
   "references": [
     { "path": "packages/types" },
+    { "path": "packages/infra" },
     { "path": "services/backend" },
-    { "path": "services/frontend" }
+    { "path": "services/frontend" },
+    { "path": "services/opentransit-mock" }
   ]
 }

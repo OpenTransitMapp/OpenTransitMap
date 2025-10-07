@@ -3,6 +3,7 @@ import {
   ViewportRequestSchema,
   ScopedTrainsFrameSchema,
   ScopeIdSchema,
+  ScopeDefinitionSchema,
 } from '@open-transit-map/types';
 import type { ViewportRequest, ScopedTrainsFrame, ScopeDefinition } from '@open-transit-map/types';
 import { clampToWebMercator, quantizeBBox, computeScopeId } from '@open-transit-map/types';
@@ -10,13 +11,31 @@ import { badRequest, notFound, zodIssuesToPlain } from '../errors.js';
 import { logger } from '../logger.js';
 import type { InMemoryStore } from '../store.js';
 
+/**
+ * Dependencies required by the scopes router.
+ *
+ * @remarks
+ * - The router is framework-agnostic beyond Express and relies on a minimal
+ *   storage interface for persistence and TTL semantics.
+ */
 interface ScopesRouterDeps {
+  /** Backing store used to persist scope definitions and scoped frames. */
   store: InMemoryStore;
 }
 
 /**
  * Creates the scopes router with injected dependencies.
- * 
+ *
+ * @remarks
+ * Endpoints:
+ * - POST `/trains/scopes` — Provision a viewport scope (idempotent).
+ * - GET  `/trains` — Fetch latest scoped frame by `scope` query param.
+ * - GET  `/trains/scopes` — List active (non-expired) scopes (debug/tooling).
+ *
+ * All request/response shapes are validated with Zod using shared schemas from
+ * `@open-transit-map/types` and are reflected in the generated OpenAPI document.
+ * See ADR-0004 for the rationale behind scope provisioning and key stability.
+ *
  * @param deps - Router dependencies (store)
  * @returns Express router for scope management
  */
@@ -25,11 +44,15 @@ export function createScopesRouter(deps: ScopesRouterDeps): Router {
 
   /**
    * Parses and validates an incoming viewport request.
-   * Following the principle "Parse, don't validate", this function turns untrusted input into a trusted domain object.
-   * 
-   * @param body - Raw request body to be parsed
-   * @returns Validated ViewportRequest object
-   * @throws {BadRequestError} If the request body fails validation, with detailed error information
+   *
+   * Following “Parse, don’t validate”, this converts untrusted JSON into a
+   * typed {@link ViewportRequest} or throws a structured 400 error.
+   *
+   * @param body - Raw request body to parse.
+   * @returns Validated {@link ViewportRequest}.
+   * @throws {AppError} 400 BadRequest with Zod issues when validation fails.
+   *
+   * @see ViewportRequestSchema
    */
   function parseViewportRequest(body: unknown): ViewportRequest {
     const result = ViewportRequestSchema.safeParse(body);
@@ -40,33 +63,22 @@ export function createScopesRouter(deps: ScopesRouterDeps): Router {
   }
 
   /**
-   * POST /trains/scopes - Creates a new viewport scope for train tracking
-   * 
-   * This endpoint provisions a new viewport scope based on the provided bounding box.
-   * It performs several normalization steps to ensure consistent scope identifiers:
-   * 1. Validates the request body
-   * 2. Clamps coordinates to Web Mercator bounds
-   * 3. Quantizes the bounding box for stable keys
-   * 4. Computes a deterministic scope ID
-   * 5. Creates an initial empty frame
-   * 
+   * Provision a viewport scope for train tracking.
+   *
+   * Normalization pipeline ensures stable scope identity:
+   * 1) Clamp bbox to Web Mercator bounds; 2) Quantize coordinates (fixed precision);
+   * 3) Compute deterministic `scopeId` (or honor `externalScopeKey`).
+   * If a frame already exists for the computed key, returns 200 with the existing frame; otherwise 201 with a new empty frame.
+   *
    * @route POST /trains/scopes
-   * @param {ViewportRequest} req.body - Viewport request with cityId and bbox
-   * @returns {ProvisionScopeResponse} 201 - New scope created with initial frame
-   * @throws {BadRequestError} 400 - Invalid request body
-   * 
+   * @param req.body - {@link ViewportRequest} with `cityId` and `bbox`.
+   * @returns 200|201 JSON matching `ProvisionScopeResponseSchema`.
+   * @throws 400 on invalid body (Zod issues), 500 on unexpected errors.
+   *
    * @example
-   * POST /trains/scopes
-   * {
-   *   "cityId": "nyc",
-   *   "bbox": {
-   *     "south": 40.70,
-   *     "west": -74.02,
-   *     "north": 40.78,
-   *     "east": -73.94,
-   *     "zoom": 12
-   *   }
-   * }
+   * curl -sS -X POST /api/v1/trains/scopes \
+   *   -H 'Content-Type: application/json' \
+   *   -d '{"cityId":"nyc","bbox":{"south":40.70,"west":-74.02,"north":40.78,"east":-73.94,"zoom":12}}'
    */
   router.post('/trains/scopes', (req, res, next) => {
     try {
@@ -116,19 +128,18 @@ export function createScopesRouter(deps: ScopesRouterDeps): Router {
   });
 
   /**
-   * GET /trains - Retrieves the latest frame for a viewport scope
-   * 
-   * This endpoint returns the current state of all trains within a specific viewport scope.
-   * The scope must have been previously created via POST /trains/scopes.
-   * 
+   * Fetch the latest scoped frame for a given scope.
+   *
+   * Requires a previously provisioned scope. The `scope` query string is
+   * validated with {@link ScopeIdSchema} and returns the latest frame if present.
+   *
    * @route GET /trains
-   * @param {string} req.query.scope - Scope identifier to fetch frame for
-   * @returns {GetScopedTrainsResponse} 200 - Latest frame for the requested scope
-   * @throws {BadRequestError} 400 - Missing or invalid scope parameter
-   * @throws {NotFoundError} 404 - Scope not found or expired
-   * 
+   * @param req.query.scope - Scope identifier (string)
+   * @returns 200 JSON matching `GetScopedTrainsResponseSchema`.
+   * @throws 400 on missing/invalid `scope`, 404 when scope/frame not found.
+   *
    * @example
-   * GET /trains?scope=v1|nyc|40.70|-74.02|40.78|-73.94
+   * curl -sS "/api/v1/trains?scope=v1|nyc|40.70|-74.02|40.78|-73.94"
    */
   router.get('/trains', (req, res, next) => {
     try {
@@ -149,6 +160,26 @@ export function createScopesRouter(deps: ScopesRouterDeps): Router {
         throw notFound('Scope not found');
       }
       res.json({ ok: true, frame });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  /**
+   * List active (non‑expired) viewport scopes.
+   *
+   * Returns normalized {@link ScopeDefinition} objects that are currently in
+   * the store. Intended for debugging and tooling; not optimized for frequent
+   * client polling.
+   *
+   * @route GET /trains/scopes
+   * @returns 200 JSON with `{ ok: true, scopes: ScopeDefinition[] }`.
+   */
+  router.get('/trains/scopes', (_req, res, next) => {
+    try {
+      const scopes: ScopeDefinition[] = [];
+      deps.store.forEachActiveScope((s) => scopes.push(ScopeDefinitionSchema.parse(s)));
+      res.json({ ok: true, scopes });
     } catch (err) {
       next(err);
     }

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { IsoDateTimeStringSchema, NonEmptyStringSchema } from './common.js';
 import { ScopeIdSchema } from './viewport.js';
 import { ScopedTrainsFrameSchema } from './frames.js';
+import { ScopeDefinitionSchema } from './viewport.js';
 
 /**
  * Health check HTTP response for `GET /healthz`.
@@ -102,3 +103,27 @@ export const GetScopedTrainsResponseSchema = z
     },
   });
 export type GetScopedTrainsResponse = z.infer<typeof GetScopedTrainsResponseSchema>;
+
+/** Response for GET /api/v1/trains/scopes (list active scopes). */
+export const GetScopesResponseSchema = z
+  .object({
+    ok: z.literal(true).describe('Always true to indicate success.'),
+    scopes: z.array(ScopeDefinitionSchema).describe('Active (non-expired) viewport scopes currently in the store.'),
+  })
+  .strict()
+  .describe('Response listing active viewport scopes.')
+  .meta({
+    id: 'GetScopesResponse',
+    example: {
+      ok: true,
+      scopes: [
+        {
+          id: 'v1|nyc|40.7000|-74.0200|40.7600|-73.9600',
+          cityId: 'nyc',
+          bbox: { south: 40.7, west: -74.02, north: 40.76, east: -73.96, zoom: 12 },
+          createdAt: '2024-09-25T12:34:56Z',
+        },
+      ],
+    },
+  });
+export type GetScopesResponse = z.infer<typeof GetScopesResponseSchema>;

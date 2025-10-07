@@ -7,6 +7,8 @@ services:
     environment:
       - NODE_ENV=development
       - NODE_OPTIONS=--enable-source-maps
+      - EVENT_BUS=valkey
+      - VALKEY_URL=redis://valkey:6379
     command: ["node", "--loader", "ts-node/esm", "services/backend/src/main.ts"]
     ports:
       - "8080:8080"
@@ -22,4 +24,17 @@ services:
     image: valkey/valkey:7
     ports:
       - "6379:6379"
+    restart: unless-stopped
+
+  opentransit-mock:
+    build:
+      context: .
+      dockerfile: services/opentransit-mock/Dockerfile
+    environment:
+      - VALKEY_URL=redis://valkey:6379
+      - CITY_ID=nyc
+      - VEHICLES=12
+      - INTERVAL_MS=1000
+    depends_on:
+      - valkey
     restart: unless-stopped
